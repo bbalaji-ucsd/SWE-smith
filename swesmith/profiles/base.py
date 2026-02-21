@@ -133,6 +133,9 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
     _cache_repo_private: bool | None = field(
         default=None, init=False, repr=False, compare=False
     )
+    _cache_is_org_account: bool | None = field(
+        default=None, init=False, repr=False, compare=False
+    )
 
     ### START: Properties, Methods that *do not* require (re-)implementation ###
 
@@ -168,6 +171,33 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
             else:
                 raise
         return self._cache_repo_private
+
+    def _is_org_account(self) -> bool:
+        """Check whether org_gh is a GitHub organization (True) or personal user (False).
+
+        Queries GET /users/{org_gh} and inspects the 'type' field.
+        Result is cached to avoid redundant API calls.
+        """
+        if self._cache_is_org_account is not None:
+            return self._cache_is_org_account
+        url = f"https://api.github.com/users/{self.org_gh}"
+        headers = {"User-Agent": "swesmith"}
+        token = os.getenv("GITHUB_TOKEN")
+        if token:
+            headers["Authorization"] = f"token {token}"
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
+            account_type = data.get("type")
+            if account_type == "Organization":
+                self._cache_is_org_account = True
+            elif account_type == "User":
+                self._cache_is_org_account = False
+            else:
+                raise ValueError(
+                    f"Unknown GitHub account type '{account_type}' for '{self.org_gh}'"
+                )
+        return self._cache_is_org_account
 
     @staticmethod
     def _configure_ssh_env():
@@ -339,9 +369,14 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
         if self.repo_name in os.listdir():
             shutil.rmtree(self.repo_name)
         source_repo = self.api.repos.get(self.owner, self.repo)
-        self.api.repos.create_in_org(
-            self.org_gh, self.repo_name, private=source_repo.private
-        )
+        if self._is_org_account():
+            self.api.repos.create_in_org(
+                self.org_gh, self.repo_name, private=source_repo.private
+            )
+        else:
+            self.api.repos.create_for_authenticated_user(
+                self.repo_name, private=source_repo.private
+            )
 
         # Clone the source repository (READ operation)
         self._configure_ssh_env()

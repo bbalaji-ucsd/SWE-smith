@@ -27,7 +27,7 @@ dependencies = []
 # Full dependencies for local development
 all = [
     "astor",
-    "datasets",
+    "datasets==4.0.0",
     "docker",
     "ghapi",
     "jinja2",

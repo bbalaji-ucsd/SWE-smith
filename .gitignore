@@ -190,3 +190,4 @@ pyrightconfig.json
 
 uv.lock
 .vscode/
+.kiro/

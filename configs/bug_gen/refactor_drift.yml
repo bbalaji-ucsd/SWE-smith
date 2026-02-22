@@ -1,0 +1,13 @@
+name: refactor_drift
+description: >
+  Generate bugs by asking an LLM to refactor a function as a plausible
+  code-quality improvement. The bug is a subtle behavioral drift hidden
+  inside what looks like a legitimate cleanup. Use --cross_file for
+  cross-module dependency analysis (recommended).
+model: anthropic/claude-3-5-sonnet-20241022
+strategy: refactor_drift
+n_bugs: 1
+max_bugs: 10
+min_callees: 1
+n_workers: 2
+seed: 24

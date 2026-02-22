@@ -9,7 +9,11 @@ from swesmith.bug_gen.contract.analyze import (
     extract_functions,
     build_dependency_contexts,
 )
-from swesmith.bug_gen.contract.prompts import build_messages, SYSTEM_PROMPT
+from swesmith.bug_gen.contract.prompts import (
+    build_messages,
+    SYSTEM_PROMPT_CONTRACT,
+    SYSTEM_PROMPT_REFACTOR_DRIFT,
+)
 
 
 SAMPLE_CODE = textwrap.dedent("""\
@@ -51,6 +55,17 @@ class TestBuildMessages:
         contexts = build_dependency_contexts(sample_file, min_callees=1)
         messages = build_messages(contexts[0])
         assert "contract" in messages[0]["content"].lower()
+
+    def test_refactor_drift_uses_refactor_prompt(self, sample_file):
+        contexts = build_dependency_contexts(sample_file, min_callees=1)
+        messages = build_messages(contexts[0], strategy="refactor_drift")
+        assert messages[0]["content"] == SYSTEM_PROMPT_REFACTOR_DRIFT
+        assert "refactor" in messages[1]["content"].lower()
+
+    def test_contract_violation_uses_contract_prompt(self, sample_file):
+        contexts = build_dependency_contexts(sample_file, min_callees=1)
+        messages = build_messages(contexts[0], strategy="contract_violation")
+        assert messages[0]["content"] == SYSTEM_PROMPT_CONTRACT
 
     def test_user_prompt_contains_target(self, sample_file):
         contexts = build_dependency_contexts(sample_file, min_callees=1)

@@ -56,7 +56,8 @@ logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 litellm.drop_params = True
 litellm.suppress_debug_info = True
 
-STRATEGY_NAME = "contract_violation"
+VALID_STRATEGIES = ("contract_violation", "refactor_drift")
+STRATEGY_NAME = "contract_violation"  # default, overridden by --strategy
 
 
 def _find_matching_entity(
@@ -81,13 +82,15 @@ def gen_contract_violation(
     ctx: DependencyContext,
     model: str,
     n_bugs: int = 1,
+    strategy: str = "contract_violation",
 ) -> list[BugRewrite]:
     """
-    Given a dependency context, ask the LLM to introduce a contract-violating bug.
+    Given a dependency context, ask the LLM to introduce a contract-violating bug
+    or a refactoring-drift bug.
 
     Returns a list of BugRewrite objects.
     """
-    messages = build_messages(ctx)
+    messages = build_messages(ctx, strategy=strategy)
     bugs = []
 
     # Loop individually — some providers (e.g. Bedrock) don't support n>1
@@ -110,13 +113,15 @@ def gen_contract_violation(
         explanation = content.split("```")[0].strip()
         if "Explanation:" in content:
             explanation = content.split("Explanation:")[-1].split("```")[0].strip()
+        elif "Refactoring rationale:" in content:
+            explanation = content.split("Refactoring rationale:")[-1].split("```")[0].strip()
 
         bugs.append(
             BugRewrite(
                 rewrite=code_block,
                 explanation=explanation,
                 cost=cost,
-                strategy=STRATEGY_NAME,
+                strategy=strategy,
                 output=content,
             )
         )
@@ -133,6 +138,7 @@ def main(
     seed: int = 24,
     min_callees: int = 1,
     cross_file: bool = False,
+    strategy: str = "contract_violation",
 ):
     random.seed(seed)
 
@@ -194,14 +200,14 @@ def main(
         if entity is None:
             return {"cost": 0.0, "n_bugs_generated": 0, "n_generation_failed": 1}
 
-        bugs = gen_contract_violation(ctx, model, n_bugs)
+        bugs = gen_contract_violation(ctx, model, n_bugs, strategy=strategy)
         cost = sum(b.cost for b in bugs)
         n_generated, n_failed = 0, 0
 
         for bug in bugs:
             bug_dir = get_bug_directory(log_dir, entity)
             bug_dir.mkdir(parents=True, exist_ok=True)
-            uuid_str = f"{STRATEGY_NAME}__{bug.get_hash()}"
+            uuid_str = f"{strategy}__{bug.get_hash()}"
             metadata_path = f"{PREFIX_METADATA}__{uuid_str}.json"
             bug_path = f"{PREFIX_BUG}__{uuid_str}.diff"
 
@@ -246,7 +252,7 @@ def main(
         futures = [executor.submit(_process_context, ctx) for ctx in all_contexts]
 
         with logging_redirect_tqdm():
-            with tqdm(total=len(all_contexts), desc="Contract violations") as pbar:
+            with tqdm(total=len(all_contexts), desc=f"Generating ({strategy})") as pbar:
                 for future in as_completed(futures):
                     result = future.result()
                     for k, v in result.items():
@@ -295,6 +301,13 @@ if __name__ == "__main__":
         "--cross_file",
         action="store_true",
         help="Use cross-file dependency analysis (shows the LLM how other modules use the target).",
+    )
+    parser.add_argument(
+        "--strategy",
+        type=str,
+        default="contract_violation",
+        choices=VALID_STRATEGIES,
+        help="Bug generation strategy: 'contract_violation' (default) or 'refactor_drift'.",
     )
     add_org_args(parser)
     args = parser.parse_args()

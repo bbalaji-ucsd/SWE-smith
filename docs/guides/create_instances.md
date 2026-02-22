@@ -169,6 +169,11 @@ There are two modes:
 * **Single-file** (default): Analyzes caller/callee relationships within one file.
 * **Cross-file** (`--cross_file`): Scans the entire repository to find functions in other modules that import and call the target. This produces bugs that cascade across module boundaries and tend to break more tests.
 
+And two strategies:
+
+* **Contract violation** (default): Ask the LLM to rewrite the target with a bug that violates the implicit contract between caller and callee.
+* **Refactoring drift** (`--strategy refactor_drift`): Ask the LLM to *refactor* the target as a plausible code-quality improvement. The bug is a side effect of the refactoring — a subtle behavioral drift hidden inside what looks like a legitimate cleanup. These bugs are harder to detect because the diff looks like an improvement, not a mistake.
+
 **How do I run it?**
 
 Single-file mode (requires in-file callees):
@@ -184,6 +189,15 @@ python -m swesmith.bug_gen.contract.generate $repo \
   --model bedrock/us.anthropic.claude-sonnet-4-6 \
   --max_bugs 10 \
   --cross_file
+```
+
+Refactoring drift (cross-file, recommended):
+```bash
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --max_bugs 10 \
+  --cross_file \
+  --strategy refactor_drift
 ```
 
 **What artifact(s) does it produce?**

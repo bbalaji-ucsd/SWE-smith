@@ -13,6 +13,7 @@ from swesmith.bug_gen.contract.generate import (
     gen_contract_violation,
     _find_matching_entity,
     STRATEGY_NAME,
+    VALID_STRATEGIES,
 )
 from swesmith.constants import BugRewrite, CodeEntity
 
@@ -132,3 +133,50 @@ class TestGenContractViolation:
         ):
             bugs = gen_contract_violation(sample_context, "test-model", n_bugs=2)
         assert len(bugs) == 2
+
+
+class TestRefactorDriftStrategy:
+    def test_refactor_drift_sets_strategy_name(self, sample_context):
+        """Test that refactor_drift strategy produces BugRewrite with correct strategy."""
+        mock_choice = MagicMock()
+        mock_choice.message.content = (
+            "Refactoring rationale:\nSimplified list comprehension.\n\n"
+            "Refactored Code:\n```python\ndef process(items):\n    return list(map(helper, items))\n```"
+        )
+        mock_response = MagicMock()
+        mock_response.choices = [mock_choice]
+
+        with (
+            patch("swesmith.bug_gen.contract.generate.completion", return_value=mock_response),
+            patch("swesmith.bug_gen.contract.generate.completion_cost", return_value=0.001),
+        ):
+            bugs = gen_contract_violation(
+                sample_context, "test-model", n_bugs=1, strategy="refactor_drift"
+            )
+
+        assert len(bugs) == 1
+        assert bugs[0].strategy == "refactor_drift"
+
+    def test_refactor_drift_extracts_rationale(self, sample_context):
+        """Test that refactoring rationale is extracted as explanation."""
+        mock_choice = MagicMock()
+        mock_choice.message.content = (
+            "Refactoring rationale:\nUsed map() for clarity.\n\n"
+            "Refactored Code:\n```python\ndef process(items):\n    return list(map(helper, items))\n```"
+        )
+        mock_response = MagicMock()
+        mock_response.choices = [mock_choice]
+
+        with (
+            patch("swesmith.bug_gen.contract.generate.completion", return_value=mock_response),
+            patch("swesmith.bug_gen.contract.generate.completion_cost", return_value=0.001),
+        ):
+            bugs = gen_contract_violation(
+                sample_context, "test-model", n_bugs=1, strategy="refactor_drift"
+            )
+
+        assert "map()" in bugs[0].explanation
+
+    def test_valid_strategies_contains_both(self):
+        assert "contract_violation" in VALID_STRATEGIES
+        assert "refactor_drift" in VALID_STRATEGIES

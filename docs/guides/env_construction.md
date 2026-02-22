@@ -2,25 +2,37 @@
 
 SWE-smith enables automatic conversion of code repositories into reinforcement learning environments.
 
-We'll review the two steps of this process:
+We'll review the three steps of this process:
 
-1. SWE-agent + LM attempts to install a repository + run the testing suite.
+1. Install a repository and generate a conda environment file.
 2. Construct an execution environment (Docker image).
+3. Verify the Docker image by running the test suite.
 
 For this section, we'll use the [Instagram/MonkeyType](https://github.com/Instagram/MonkeyType/) repository as a running example, 
 specifically at commit [`70c3acf`](https://github.com/Instagram/MonkeyType/tree/70c3acf62950be5dfb28743c7a719bfdecebcd84).
 
-## Automatically Install Repos with SWE-agent
+## Step 1: Install Repository and Generate Environment File
 
-Coming soon!
+Before building a Docker image, you need to generate a conda environment YAML file by installing the repository locally. For Python repositories, use `try_install_py`:
 
-!!! note "Python installation scripts"
+```bash
+python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
+    --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
+    --extra-test-deps "pytest<8" \
+    --smoke-cmd "pytest tests/ -q --maxfail=1"
+```
 
-    Early on in SWE-smith's development, we focused exclusively on Python repositories and wrote Python-specific scripts for automatic repo instllation.
-    More information [here](../guides/env_construction_py.md)
+This will clone the repository, create a conda environment, install dependencies, run a smoke test, and export the environment to a YAML file under `logs/build_images/env/`.
 
-## Create an Execution Environment
-Run the following command to create a Docker image for the repository.
+For more details on Python-specific options (version selection, test deps, debugging), see the [Python Environment Options](../guides/env_construction_py.md) guide.
+
+!!! note "Automatic installation with SWE-agent"
+
+    We are working on a general-purpose automatic installation flow using SWE-agent. Coming soon!
+
+## Step 2: Create an Execution Environment
+
+Once the environment YAML file exists, run the following command to create a Docker image:
 
 ```bash
 python -m swesmith.build_repo.create_images -r MonkeyType --user <github_username>
@@ -34,7 +46,7 @@ This command will create two artifacts:
 
     `--org` and `--user` are mutually exclusive. The account type is auto-detected via the GitHub API.
 
-2. A Docker image (`swesmith.x86_64.<repo>.<commit>`) which contains the installed codebase.
+2. A Docker image (`swebench/swesmith.x86_64.<repo>.<commit>`) which contains the installed codebase.
 
 !!! note "`create_images` arguments"
 
@@ -44,15 +56,36 @@ This command will create two artifacts:
     
     `-f`: Force rebuild images even if they already exist locally.
 
+    `-y`: Proceed without confirmation prompt.
+
     `--user`: GitHub personal account to create mirrors under.
 
     `--org`: GitHub organization to create mirrors under.
 
-It's good practice to check that your Docker image works as expected.
+## Step 3: Verify the Docker Image
+
+It's good practice to check that your Docker image works as expected. Start an interactive container:
+
 ```bash
 docker run -it --rm swebench/swesmith.x86_64.instagram_1776_monkeytype.70c3acf6
 ```
-Within the container, run the testing suite (e.g. `pytest`) to ensure that the codebase is functioning as expected.
+
+Within the container, activate the environment and run the test suite:
+
+```bash
+source /opt/miniconda3/bin/activate
+conda activate testbed
+cd /testbed
+pytest tests/
+```
+
+Expected output (for MonkeyType):
+
+```
+371 passed, 2 skipped, 1 xpassed, 702 warnings in 2.94s
+```
+
+All core tests should pass. A small number of skipped tests and `xpassed` (expected-failure tests that unexpectedly passed) are normal.
 
 !!! note "Get existing Docker images"
 

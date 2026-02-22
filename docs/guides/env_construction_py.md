@@ -9,8 +9,8 @@ For more details, refer to the "Running Example" section.
 ```bash
 python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
     --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
-    --python-version 3.11 \
-    --extra-test-deps "pytest<8"
+    --extra-test-deps "pytest<8" \
+    --smoke-cmd "pytest tests/ -q --maxfail=1"
 ```
 where `install_repo.sh` is the script that installs the repository.
 ([Example](https://github.com/SWE-bench/SWE-smith/blob/main/configs/install_repo.sh))
@@ -18,6 +18,10 @@ where `install_repo.sh` is the script that installs the repository.
 !!! note "Why `pytest<8`?"
 
     Some repositories (including MonkeyType) have tests that rely on `pytest.skip` being a plain function, which changed in pytest 8+. Pinning `pytest<8` via `--extra-test-deps` ensures the smoke test passes.
+
+!!! note "Why `--smoke-cmd \"pytest tests/ -q --maxfail=1\"`?"
+
+    MonkeyType ships a `demo/` directory with a time-sensitive test (`demo/test_inbox.py`) that can fail depending on the current date. Using `pytest tests/` limits the smoke test to the core test suite and avoids this flaky test.
 
 If successful, two artifacts will be produced under `logs/build_repo/env/<org>__<repo>.<hash>`:
 
@@ -134,18 +138,17 @@ Here's the complete example that was used to successfully build the MonkeyType e
 ```bash
 python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
     --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
-    --python-version 3.11 \
     --extra-test-deps "pytest<8" \
-    --smoke-cmd "pytest -q --maxfail=1" \
+    --smoke-cmd "pytest tests/ -q --maxfail=1" \
     --force
 ```
 
 This will:
 - Clone MonkeyType at commit `70c3acf`
-- Create a conda environment with Python 3.11
+- Create a conda environment with Python 3.10 (the default)
 - Install the repository in editable mode
 - Install test dependencies (found via `[test]` extras)
 - Install `pytest<8` as an additional test dependency (to avoid compatibility issues with newer pytest)
-- Run `pytest -q --maxfail=1` as the smoke test
+- Run `pytest tests/ -q --maxfail=1` as the smoke test (scoped to `tests/` to avoid the flaky `demo/` test)
 - Force overwrite any existing environment file
 - Clean up the repository and environment after completion

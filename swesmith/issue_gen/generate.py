@@ -281,18 +281,20 @@ class IssueGen:
             _, repos_to_remove = self.get_test_functions(instance_curr)
 
         # Generate n_instructions completions containing problem statements
-        response = completion(
-            model=self.model, messages=messages, n=self.n_instructions, temperature=0
-        )
+        # Loop individually — some providers (e.g. Bedrock) don't support n>1
+        problem_statements = []
+        total_cost = 0
+        for _ in range(self.n_instructions):
+            response = completion(
+                model=self.model, messages=messages, n=1, temperature=0
+            )
+            total_cost += completion_cost(response)
+            problem_statements.append(
+                response.choices[0].message.content  # type: ignore[attr-defined]
+            )
 
-        cost = completion_cost(response)
+        cost = total_cost
         metadata["cost"] = (0 if "cost" not in metadata else metadata["cost"]) + cost
-
-        # Extract problem statements from response
-        problem_statements = [
-            choice.message.content  # type: ignore[attr-defined]
-            for choice in response.choices  # type: ignore[attr-defined]
-        ]
 
         if "responses" not in metadata:
             # Initialize responses dict if it doesn't exist

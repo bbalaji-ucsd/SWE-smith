@@ -51,6 +51,7 @@ from typing import Any
 load_dotenv(dotenv_path=os.getenv("SWEFT_DOTENV_PATH"))
 
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+litellm.drop_params = True
 litellm.suppress_debug_info = True
 
 
@@ -92,9 +93,11 @@ def gen_bug_from_code_lm(
     ]
     # Remove empty messages
     messages = [x for x in messages if x["content"]]
-    response: Any = completion(model=model, messages=messages, n=n_bugs, temperature=1)
-    for choice in response.choices:
-        message = choice.message
+
+    # Some providers (e.g. Bedrock) don't support n>1, so we loop individually
+    for _ in range(n_bugs):
+        response: Any = completion(model=model, messages=messages, n=1, temperature=1)
+        message = response.choices[0].message
         explanation = (
             message.content.split("Explanation:")[-1].strip()
             if "Explanation" in message.content
@@ -104,7 +107,7 @@ def gen_bug_from_code_lm(
             BugRewrite(
                 rewrite=extract_code_block(message.content),
                 explanation=explanation,
-                cost=completion_cost(completion_response=response) / n_bugs,
+                cost=completion_cost(completion_response=response),
                 output=message.content,
                 strategy="llm",
             )

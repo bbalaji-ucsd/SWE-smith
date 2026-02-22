@@ -8,10 +8,16 @@ For more details, refer to the "Running Example" section.
 
 ```bash
 python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
-    --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84
+    --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
+    --python-version 3.11 \
+    --extra-test-deps "pytest<8"
 ```
 where `install_repo.sh` is the script that installs the repository.
 ([Example](https://github.com/SWE-bench/SWE-smith/blob/main/configs/install_repo.sh))
+
+!!! note "Why `pytest<8`?"
+
+    Some repositories (including MonkeyType) have tests that rely on `pytest.skip` being a plain function, which changed in pytest 8+. Pinning `pytest<8` via `--extra-test-deps` ensures the smoke test passes.
 
 If successful, two artifacts will be produced under `logs/build_repo/env/<org>__<repo>.<hash>`:
 
@@ -123,14 +129,14 @@ pytest tests/
 
 ### Complete Example
 
-Here's a complete example using MonkeyType with multiple options:
+Here's the complete example that was used to successfully build the MonkeyType environment:
 
 ```bash
 python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
     --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
     --python-version 3.11 \
-    --extra-test-deps "hypothesis" \
-    --smoke-cmd "pytest tests/test_cli.py -q" \
+    --extra-test-deps "pytest<8" \
+    --smoke-cmd "pytest -q --maxfail=1" \
     --force
 ```
 
@@ -139,7 +145,7 @@ This will:
 - Create a conda environment with Python 3.11
 - Install the repository in editable mode
 - Install test dependencies (found via `[test]` extras)
-- Install `hypothesis` as an additional test dependency
-- Run `pytest tests/test_cli.py -q` as the smoke test
+- Install `pytest<8` as an additional test dependency (to avoid compatibility issues with newer pytest)
+- Run `pytest -q --maxfail=1` as the smoke test
 - Force overwrite any existing environment file
 - Clean up the repository and environment after completion

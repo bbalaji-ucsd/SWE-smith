@@ -23,13 +23,17 @@ Coming soon!
 Run the following command to create a Docker image for the repository.
 
 ```bash
-python -m swesmith.build_repo.create_images -r MonkeyType
+python -m swesmith.build_repo.create_images -r MonkeyType --user <github_username>
 ```
 
 This command will create two artifacts:
-1. A mirror of the original repository at the specified commit, created under [`swesmith`](https://github.com/orgs/swesmith/repositories). To change the organization, you can...
-    * Pass in an `--org` argument, or
+1. A mirror of the original repository at the specified commit, created under your GitHub account. To change the target account, you can...
+    * Pass `--user <username>` for a personal GitHub account, or
+    * Pass `--org <org>` for a GitHub organization, or
     * (If built from source) Change `ORG_NAME_GH` in `swesmith/constants.py`
+
+    `--org` and `--user` are mutually exclusive. The account type is auto-detected via the GitHub API.
+
 2. A Docker image (`swesmith.x86_64.<repo>.<commit>`) which contains the installed codebase.
 
 !!! note "`create_images` arguments"
@@ -40,9 +44,13 @@ This command will create two artifacts:
     
     `-f`: Force rebuild images even if they already exist locally.
 
+    `--user`: GitHub personal account to create mirrors under.
+
+    `--org`: GitHub organization to create mirrors under.
+
 It's good practice to check that your Docker image works as expected.
 ```bash
-docker run -it --rm swebench/swesmith.x86_64.instagram__monkeytype.70c3acf6
+docker run -it --rm swebench/swesmith.x86_64.instagram_1776_monkeytype.70c3acf6
 ```
 Within the container, run the testing suite (e.g. `pytest`) to ensure that the codebase is functioning as expected.
 

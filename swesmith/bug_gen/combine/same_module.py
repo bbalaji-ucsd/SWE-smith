@@ -21,7 +21,7 @@ from swesmith.constants import (
     generate_hash,
 )
 from swesmith.bug_gen.utils import apply_patches, get_combos
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 from unidiff import PatchSet
 
@@ -254,5 +254,7 @@ if __name__ == "__main__":
         help="Depth of the module to combine patches from",
         default=3,
     )
+    add_org_args(parser)
     args = parser.parse_args()
+    apply_org_args(args, parser)
     main(**vars(args))

@@ -42,7 +42,7 @@ from swesmith.constants import (
     BugRewrite,
     CodeEntity,
 )
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 from typing import Any
@@ -251,5 +251,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-w", "--n_workers", type=int, help="Number of workers to use", default=1
     )
+    add_org_args(parser)
     args = parser.parse_args()
+    apply_org_args(args, parser)
     main(**vars(args))

@@ -778,6 +778,51 @@ class Registry(UserDict):
         """Set GitHub token for all profiles retrieved from this registry."""
         self.github_token = token
 
+    def set_org(self, org_gh: str):
+        """Override the GitHub org/user for all registered profiles.
+
+        This is the single place to redirect mirror lookups to a personal
+        account or alternative organization.  Every CLI entry point that
+        accepts ``--user`` / ``--org`` should call this instead of manually
+        iterating over ``registry.values()``.
+        """
+        for profile in self.values():
+            profile.org_gh = org_gh
+
 
 # Global registry instance that can be shared across modules
 registry = Registry()
+
+
+def add_org_args(parser):
+    """Add the standard ``--user`` / ``--org`` flags to an argparse parser."""
+    parser.add_argument(
+        "--org",
+        type=str,
+        help="GitHub organization to clone from (default: swesmith)",
+    )
+    parser.add_argument(
+        "--user",
+        type=str,
+        help="GitHub personal account to clone from (cannot be used with --org)",
+    )
+
+
+def apply_org_args(args, parser=None):
+    """Consume ``--user`` / ``--org`` from *args*, configure the registry, and
+    delete the two attributes so the remaining args can be forwarded with
+    ``**vars(args)``."""
+    org = getattr(args, "org", None)
+    user = getattr(args, "user", None)
+    if org and user:
+        if parser:
+            parser.error("--org and --user are mutually exclusive. Specify one or the other.")
+        else:
+            raise ValueError("--org and --user are mutually exclusive.")
+    gh_account = org or user
+    if gh_account:
+        registry.set_org(gh_account)
+    # Clean up so callers can do **vars(args) without extra keys
+    for attr in ("org", "user"):
+        if hasattr(args, attr):
+            delattr(args, attr)

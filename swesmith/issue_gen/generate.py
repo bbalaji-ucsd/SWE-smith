@@ -45,7 +45,7 @@ from swesmith.harness.utils import (
     run_patch_in_container,
 )
 from swesmith.issue_gen.utils import get_test_function
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 litellm.drop_params = True
@@ -437,29 +437,9 @@ if __name__ == "__main__":
         action="store_true",
         help="Whether to redo instances that already have an output file.",
     )
-    parser.add_argument(
-        "--org",
-        type=str,
-        help="GitHub organization to clone from (default: swesmith)",
-    )
-    parser.add_argument(
-        "--user",
-        type=str,
-        help="GitHub personal account to clone from (cannot be used with --org)",
-    )
+    add_org_args(parser)
     args = parser.parse_args()
-
-    if args.org and args.user:
-        parser.error("--org and --user are mutually exclusive. Specify one or the other.")
-
-    gh_account = args.org or args.user
-    if gh_account:
-        for profile in registry.values():
-            profile.org_gh = gh_account
-
-    # Remove org/user from args before passing to IssueGen
-    del args.org
-    del args.user
+    apply_org_args(args, parser)
 
     if args.workers == 1:
         logger.warning(

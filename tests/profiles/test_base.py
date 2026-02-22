@@ -333,6 +333,44 @@ def test_registry_values():
     assert any(v.owner == "test2" for v in values)
 
 
+def test_registry_set_org():
+    """Test Registry.set_org updates org_gh on all profiles."""
+    from swesmith.profiles.base import Registry
+
+    registry = Registry()
+
+    @dataclass
+    class TestProfileA(RepoProfile):
+        owner: str = "ownerA"
+        repo: str = "repoA"
+        commit: str = "aaaa567890abcdef"
+
+        def build_image(self):
+            pass
+
+        def log_parser(self, log: str) -> dict[str, str]:
+            return {}
+
+    @dataclass
+    class TestProfileB(RepoProfile):
+        owner: str = "ownerB"
+        repo: str = "repoB"
+        commit: str = "bbbb567890abcdef"
+
+        def build_image(self):
+            pass
+
+        def log_parser(self, log: str) -> dict[str, str]:
+            return {}
+
+    registry.register_profile(TestProfileA)
+    registry.register_profile(TestProfileB)
+
+    registry.set_org("my-custom-org")
+    for p in registry.values():
+        assert p.org_gh == "my-custom-org"
+
+
 def test_mirror_exists():
     """Test _mirror_exists method"""
     repo_profile = registry.get("mewwts__addict.75284f95")

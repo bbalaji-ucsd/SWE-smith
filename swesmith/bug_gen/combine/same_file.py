@@ -26,7 +26,7 @@ from swesmith.constants import (
     PREFIX_METADATA,
     generate_hash,
 )
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 
 COMBINE_FILE = "combine_file"
@@ -156,5 +156,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Include invalid patches.",
     )
+    add_org_args(parser)
     args = parser.parse_args()
+    apply_org_args(args, parser)
     main(**vars(args))

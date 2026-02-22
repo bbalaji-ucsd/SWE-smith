@@ -34,7 +34,7 @@ from swebench.harness.constants import (
     LOG_REPORT,
 )
 from swesmith.constants import KEY_TIMED_OUT, LOG_DIR_RUN_VALIDATION, LOG_DIR_TASKS
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 
 
@@ -274,7 +274,9 @@ if __name__ == "__main__":
         action="store_true",
         help="Show what would be done without making any changes",
     )
+    add_org_args(parser)
     args = parser.parse_args()
+    apply_org_args(args, parser)
     # Convert dry-run to dry_run for function call
     main(
         eval_logs=args.eval_logs,

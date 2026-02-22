@@ -25,7 +25,7 @@ from swesmith.constants import (
     BugRewrite,
     CodeEntity,
 )
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 
 from swesmith.bug_gen.procedural import MAP_EXT_TO_MODIFIERS
@@ -232,6 +232,8 @@ if __name__ == "__main__":
         default=None,
         help="Maximum number of seconds to run generation. Set to None to disable timeout.",
     )
+    add_org_args(parser)
 
     args = parser.parse_args()
+    apply_org_args(args, parser)
     main(**vars(args))

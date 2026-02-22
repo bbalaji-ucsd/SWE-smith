@@ -36,7 +36,7 @@ from swesmith.constants import (
     PREFIX_METADATA,
     INSTANCE_REF,
 )
-from swesmith.profiles import registry, RepoProfile
+from swesmith.profiles import registry, RepoProfile, add_org_args, apply_org_args
 from tqdm.auto import tqdm
 from unidiff import PatchSet
 
@@ -571,5 +571,7 @@ if __name__ == "__main__":
         default=10000,
         help="Maximum lines in a single changed file for recovery attempt (default: 10000)",
     )
+    add_org_args(parser)
     args = parser.parse_args()
+    apply_org_args(args, parser)
     main(**vars(args))

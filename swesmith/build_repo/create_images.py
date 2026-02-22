@@ -11,7 +11,7 @@ from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
-from swesmith.profiles import registry
+from swesmith.profiles import registry, add_org_args, apply_org_args
 
 
 def build_profile_image(profile, push=False):
@@ -193,27 +193,10 @@ def main():
         choices=["x86_64", "arm64"],
         help="Force build for specific architecture",
     )
-    parser.add_argument(
-        "--org",
-        type=str,
-        help="GitHub organization to create mirrors under (default: swesmith)",
-    )
-    parser.add_argument(
-        "--user",
-        type=str,
-        help="GitHub personal account to create mirrors under (cannot be used with --org)",
-    )
+    add_org_args(parser)
 
     args = parser.parse_args()
-
-    if args.org and args.user:
-        parser.error("--org and --user are mutually exclusive. Specify one or the other.")
-
-    # Set the GitHub account on all profiles
-    gh_account = args.org or args.user
-    if gh_account:
-        for profile in registry.values():
-            profile.org_gh = gh_account
+    apply_org_args(args, parser)
 
     if args.list_envs:
         print("All execution environment Docker images:")

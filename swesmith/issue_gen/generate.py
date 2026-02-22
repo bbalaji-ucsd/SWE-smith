@@ -276,7 +276,8 @@ class IssueGen:
             with open(output_file, "w") as f_:
                 json.dump(metadata, f_, indent=4)
         else:
-            # If messages already exist, get repos_to_remove from existing metadata
+            # If messages already exist, reuse them and get repos_to_remove
+            messages = metadata["messages"]
             _, repos_to_remove = self.get_test_functions(instance_curr)
 
         # Generate n_instructions completions containing problem statements
@@ -436,7 +437,30 @@ if __name__ == "__main__":
         action="store_true",
         help="Whether to redo instances that already have an output file.",
     )
+    parser.add_argument(
+        "--org",
+        type=str,
+        help="GitHub organization to clone from (default: swesmith)",
+    )
+    parser.add_argument(
+        "--user",
+        type=str,
+        help="GitHub personal account to clone from (cannot be used with --org)",
+    )
     args = parser.parse_args()
+
+    if args.org and args.user:
+        parser.error("--org and --user are mutually exclusive. Specify one or the other.")
+
+    gh_account = args.org or args.user
+    if gh_account:
+        for profile in registry.values():
+            profile.org_gh = gh_account
+
+    # Remove org/user from args before passing to IssueGen
+    del args.org
+    del args.user
+
     if args.workers == 1:
         logger.warning(
             "Using only 1 worker for generation. You can speed up the generation by setting --workers > 1."

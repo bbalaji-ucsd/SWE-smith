@@ -32,6 +32,8 @@ This will generate issue text for each task instance, producing several artifact
 | `-w`, `--workers` | Number of parallel workers (default: 1) |
 | `-i`, `--instance_ids` | Filter to specific instance IDs (supports glob patterns) |
 | `-r`, `--redo_existing` | Regenerate issue text for instances that already have output |
+| `--user` | GitHub personal account to clone from (mutually exclusive with `--org`) |
+| `--org` | GitHub organization to clone from (mutually exclusive with `--user`) |
 
 ### Using AWS Bedrock
 

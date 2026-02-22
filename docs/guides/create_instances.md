@@ -156,6 +156,45 @@ To save output to a log file with real-time unbuffered streaming:
 PYTHONUNBUFFERED=1 stdbuf -oL -eL uv run modal run --detach scripts/bug_gen.py --language javascript 2>&1 | tee validation.log
 ```
 
+## Contract Violation
+
+**How does it work?**
+
+This method analyzes inter-function dependencies and asks an LLM to introduce bugs that violate the implicit contract between caller and callee. Unlike LM Modify/Rewrite (which operate on a single function in isolation), this method shows the LLM the target function together with its callers, callees, and optionally cross-file usage sites.
+
+The key insight: a function can look correct in isolation but break something upstream or downstream. These are the kinds of bugs that survive code review.
+
+There are two modes:
+
+* **Single-file** (default): Analyzes caller/callee relationships within one file.
+* **Cross-file** (`--cross_file`): Scans the entire repository to find functions in other modules that import and call the target. This produces bugs that cascade across module boundaries and tend to break more tests.
+
+**How do I run it?**
+
+Single-file mode (requires in-file callees):
+```bash
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model openai/gpt-4o \
+  --max_bugs 10
+```
+
+Cross-file mode (recommended — higher validation rate):
+```bash
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --max_bugs 10 \
+  --cross_file
+```
+
+**What artifact(s) does it produce?**
+
+Same folder structure as LM Generated bugs, with artifacts named:
+
+* `bug__contract_violation__<hash>.diff`
+* `metadata__contract_violation__<hash>.json`
+
+The metadata includes the target function, its callers/callees, and (in cross-file mode) the cross-file usage sites that were shown to the LLM.
+
 ## PR Mirroring
 
 **How does it work?**

@@ -792,3 +792,81 @@ def test_is_test_path_cases(tmp_path):
     # Should match if extension is supported
     assert mock_rp._is_test_path("src", "test_foo.py")
     assert mock_rp._is_test_path("tests", "foo.js")
+
+
+# Tests for _is_org_account() method
+
+
+def test_is_org_account_detects_organization():
+    """Test _is_org_account returns True for GitHub organizations."""
+    repo_profile = registry.get("mewwts__addict.75284f95")
+    repo_profile._cache_is_org_account = None
+
+    mock_response = MagicMock()
+    mock_response.read.return_value = b'{"type": "Organization"}'
+    mock_response.__enter__ = lambda s: s
+    mock_response.__exit__ = MagicMock(return_value=False)
+
+    with patch("urllib.request.urlopen", return_value=mock_response):
+        assert repo_profile._is_org_account() is True
+
+
+def test_is_org_account_detects_user():
+    """Test _is_org_account returns False for personal user accounts."""
+    repo_profile = registry.get("mewwts__addict.75284f95")
+    repo_profile._cache_is_org_account = None
+
+    mock_response = MagicMock()
+    mock_response.read.return_value = b'{"type": "User"}'
+    mock_response.__enter__ = lambda s: s
+    mock_response.__exit__ = MagicMock(return_value=False)
+
+    with patch("urllib.request.urlopen", return_value=mock_response):
+        assert repo_profile._is_org_account() is False
+
+
+# Tests for create_mirror() with user account support
+
+
+def test_create_mirror_user_account():
+    """Test create_mirror uses create_for_authenticated_user for personal accounts."""
+    repo_profile = registry.get("mewwts__addict.75284f95")
+
+    with (
+        patch.object(repo_profile, "_mirror_exists", return_value=False),
+        patch.object(repo_profile, "_is_org_account", return_value=False),
+        patch.object(repo_profile, "_is_repo_private", return_value=False),
+        patch("os.listdir", return_value=[]),
+        patch("os.path.exists", return_value=False),
+        patch.object(repo_profile.api, "repos") as mock_repos,
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_repos.get.return_value = MagicMock(private=False)
+        repo_profile.create_mirror()
+
+        mock_repos.create_for_authenticated_user.assert_called_once_with(
+            repo_profile.repo_name, private=False
+        )
+        mock_repos.create_in_org.assert_not_called()
+
+
+def test_create_mirror_org_account():
+    """Test create_mirror uses create_in_org for organization accounts (backward compat)."""
+    repo_profile = registry.get("mewwts__addict.75284f95")
+
+    with (
+        patch.object(repo_profile, "_mirror_exists", return_value=False),
+        patch.object(repo_profile, "_is_org_account", return_value=True),
+        patch.object(repo_profile, "_is_repo_private", return_value=False),
+        patch("os.listdir", return_value=[]),
+        patch("os.path.exists", return_value=False),
+        patch.object(repo_profile.api, "repos") as mock_repos,
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_repos.get.return_value = MagicMock(private=True)
+        repo_profile.create_mirror()
+
+        mock_repos.create_in_org.assert_called_once_with(
+            repo_profile.org_gh, repo_profile.repo_name, private=True
+        )
+        mock_repos.create_for_authenticated_user.assert_not_called()

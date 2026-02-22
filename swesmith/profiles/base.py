@@ -398,7 +398,14 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
         if os.path.exists(os.path.join(self.repo_name, ".gitmodules")):
             git_cmds.append("git submodule update --init --recursive")
 
-        # Add the rest of the commands (WRITE → always SSH)
+        # Add the rest of the commands (WRITE → SSH if available, HTTPS with token otherwise)
+        token = os.getenv("GITHUB_TOKEN")
+        if self._is_repo_private() or _find_ssh_key() or os.getenv("GITHUB_USER_SSH_KEY"):
+            push_url = f"git@github.com:{self.mirror_name}.git"
+        elif token:
+            push_url = f"https://x-access-token:{token}@github.com/{self.mirror_name}.git"
+        else:
+            push_url = f"git@github.com:{self.mirror_name}.git"
         git_cmds.extend(
             [
                 "rm -rf .git",
@@ -410,7 +417,7 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
                 "git add .",
                 "git commit --no-gpg-sign -m 'Initial commit'",
                 "git branch -M main",
-                f"git remote add origin git@github.com:{self.mirror_name}.git",
+                f"git remote add origin {push_url}",
                 "git push -u origin main",
             ]
         )

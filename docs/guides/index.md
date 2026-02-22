@@ -67,6 +67,14 @@ New to SWE-smith? Start with [Installation](../getting_started/installation.md) 
 
     [:octicons-arrow-right-24: Start training](train_swe_agent.md)
 
+-   :material-cloud: **Using AWS Bedrock** · Optional
+
+    ---
+
+    Use AWS Bedrock as an LLM provider for bug generation and issue text generation instead of direct API keys.
+
+    [:octicons-arrow-right-24: Bedrock setup](bedrock.md)
+
 </div>
 
 ---

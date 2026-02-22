@@ -457,9 +457,16 @@ class RepoProfile(ABC, metaclass=SingletonMeta):
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            # Always set SSH push URL (writes always use SSH)
+            # Set push URL: prefer SSH if keys available, fall back to HTTPS with token
+            token = os.getenv("GITHUB_TOKEN")
+            if _find_ssh_key() or os.getenv("GITHUB_USER_SSH_KEY"):
+                push_url = self._mirror_ssh_url
+            elif token:
+                push_url = f"https://x-access-token:{token}@github.com/{self.mirror_name}.git"
+            else:
+                push_url = self._mirror_ssh_url
             subprocess.run(
-                f"git -C {dest} remote set-url --push origin {self._mirror_ssh_url}",
+                f"git -C {dest} remote set-url --push origin {push_url}",
                 check=True,
                 shell=True,
                 stdout=subprocess.DEVNULL,
@@ -739,9 +746,21 @@ class Registry(UserDict):
         return profile
 
     def get_from_inst(self, instance: dict) -> RepoProfile:
-        """Get a profile class by a SWE-smith instance dict."""
+        """Get a profile class by a SWE-smith instance dict.
+
+        Handles the case where the "repo" field contains an org/user prefix
+        (e.g. "bbalaji-ucsd/Owner__Repo.commit") that doesn't match the
+        registry keys.  Falls back to the bare repo_name portion.
+        """
         key = instance.get("repo", instance[KEY_INSTANCE_ID].rsplit(".", 1)[0])
-        return self.get(key)
+        if key in self.data:
+            return self.get(key)
+        # Strip org/user prefix and retry with bare repo_name
+        if "/" in key:
+            bare = key.split("/", 1)[1]
+            if bare in self.data:
+                return self.get(bare)
+        return self.get(key)  # raises KeyError with original key
 
     def keys(self):
         return self.data.keys()

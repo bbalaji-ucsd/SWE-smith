@@ -1332,6 +1332,12 @@ class MonkeyType70c3acf6(PythonProfile):
     owner: str = "Instagram"
     repo: str = "MonkeyType"
     commit: str = "70c3acf62950be5dfb28743c7a719bfdecebcd84"
+    test_cmd: str = (
+        "source /opt/miniconda3/bin/activate; "
+        f"conda activate {ENV_NAME}; "
+        "pytest tests/ demo/ --deselect demo/test_inbox.py::test_everything "
+        "--disable-warnings --color=no --tb=no --verbose"
+    )
 
 
 @dataclass

@@ -23,11 +23,9 @@ python -m swesmith.harness.gather logs/run_validation/pandas_test
 
 # Generate issues for the valid task instances
 python -m swesmith.issue_gen.generate \
-    --dataset_path logs/run_validation/basic/pandas_test.json \
-  --model claude-3-7-sonnet-20250219 \
-  --n_workers=1 \
-  --config_file configs/issue_gen/ig_v2.yaml \
-  --experiment_id ig_v2
+    -d logs/task_insts/pandas-dev__pandas.95280573.json \
+    -c configs/issue_gen/ig_v2.yaml \
+    -w 1
 ```
 
 !!! tip "Next steps"

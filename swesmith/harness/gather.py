@@ -387,6 +387,28 @@ if __name__ == "__main__":
         action="store_true",
         help="Rebuild and push Docker image for repos (such that latest branches are included)",
     )
+    parser.add_argument(
+        "--org",
+        type=str,
+        help="GitHub organization to push branches to (default: swesmith)",
+    )
+    parser.add_argument(
+        "--user",
+        type=str,
+        help="GitHub personal account to push branches to (cannot be used with --org)",
+    )
     args = parser.parse_args()
+
+    if args.org and args.user:
+        parser.error("--org and --user are mutually exclusive. Specify one or the other.")
+
+    gh_account = args.org or args.user
+    if gh_account:
+        for profile in registry.values():
+            profile.org_gh = gh_account
+
+    # Remove org/user from args before passing to main
+    del args.org
+    del args.user
 
     main(**vars(args))

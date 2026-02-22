@@ -47,6 +47,14 @@ For each task instance, the validation harness produces a `logs/run_validation/<
 python -m swesmith.harness.gather logs/run_validation/<run_id>
 ```
 
+If your GitHub mirror lives under a personal account (not the default `swesmith` org), pass `--user <username>`:
+
+```bash
+python -m swesmith.harness.gather logs/run_validation/<run_id> --user <github_username>
+```
+
+Or `--org <org>` for an organization account. These flags are mutually exclusive and work the same way as in `create_images`.
+
 Task instances with 1+ `FAIL_TO_PASS` test cases and 1+ `PASS_TO_PASS` test cases are considered valid.
 
 This script performs two actions:
@@ -72,7 +80,7 @@ You can run this script to sanity check that testing for validated task instance
 
 ```bash
 python -m swesmith.harness.eval \
-    --dataset_path bugs/task_insts/{repo}.json \
+    --dataset_path logs/task_insts/<repo>.json \
     --predictions_path gold \
     --run_id sanity
 ```

@@ -54,12 +54,13 @@ def test_repo_profile_clone():
     repo_profile = registry.get("mewwts__addict.75284f95")
     mirror_ssh = f"git@github.com:{repo_profile.mirror_name}.git"
 
-    # Test public repo clone (HTTPS read URL, SSH push URL)
+    # Test public repo clone with SSH key available (HTTPS read URL, SSH push URL)
     expected_dest = repo_profile.repo_name
     with (
         patch.object(repo_profile, "_is_repo_private", return_value=False),
         patch("os.path.exists", return_value=False) as mock_exists,
         patch("subprocess.run") as mock_run,
+        patch("swesmith.profiles.base._find_ssh_key", return_value=Path("/fake/id_rsa")),
     ):
         result, cloned = repo_profile.clone()
         mock_exists.assert_called_once_with(expected_dest)
@@ -76,11 +77,32 @@ def test_repo_profile_clone():
         assert result == expected_dest
         assert cloned is True
 
+    # Test public repo clone without SSH key (HTTPS token fallback for push)
+    token = os.getenv("GITHUB_TOKEN", "test-token")
+    https_push = f"https://x-access-token:{token}@github.com/{repo_profile.mirror_name}.git"
+    with (
+        patch.object(repo_profile, "_is_repo_private", return_value=False),
+        patch("os.path.exists", return_value=False),
+        patch("subprocess.run") as mock_run,
+        patch("swesmith.profiles.base._find_ssh_key", return_value=None),
+        patch.dict(os.environ, {"GITHUB_TOKEN": token}, clear=False),
+        patch.dict(os.environ, {"GITHUB_USER_SSH_KEY": ""}, clear=False),
+    ):
+        result, cloned = repo_profile.clone()
+        assert mock_run.call_count == 2
+        seturl_call = mock_run.call_args_list[1]
+        assert (
+            seturl_call.args[0]
+            == f"git -C {expected_dest} remote set-url --push origin {https_push}"
+        )
+        assert cloned is True
+
     # Test private repo clone (SSH for both read and push)
     with (
         patch.object(repo_profile, "_is_repo_private", return_value=True),
         patch("os.path.exists", return_value=False),
         patch("subprocess.run") as mock_run,
+        patch("swesmith.profiles.base._find_ssh_key", return_value=Path("/fake/id_rsa")),
     ):
         result, cloned = repo_profile.clone()
         assert mock_run.call_count == 2
@@ -98,6 +120,7 @@ def test_repo_profile_clone():
         patch.object(repo_profile, "_is_repo_private", return_value=False),
         patch("os.path.exists", return_value=False),
         patch("subprocess.run") as mock_run,
+        patch("swesmith.profiles.base._find_ssh_key", return_value=Path("/fake/id_rsa")),
     ):
         result, cloned = repo_profile.clone(custom_dest)
         clone_call = mock_run.call_args_list[0]
@@ -232,6 +255,38 @@ def test_registry_get_from_inst():
 
     # Test getting profile from instance
     instance = {KEY_INSTANCE_ID: "test__test-repo.12345678.some_suffix"}
+    profile = registry.get_from_inst(instance)
+    assert isinstance(profile, TestProfile)
+    assert profile.owner == "test"
+    assert profile.repo == "test-repo"
+
+
+def test_registry_get_from_inst_org_prefix_fallback():
+    """Test that get_from_inst strips org/user prefix when repo key has one."""
+    from swesmith.profiles.base import Registry
+    from swebench.harness.constants import KEY_INSTANCE_ID
+
+    registry = Registry()
+
+    @dataclass
+    class TestProfile(RepoProfile):
+        owner: str = "test"
+        repo: str = "test-repo"
+        commit: str = "1234567890abcdef"
+
+        def build_image(self):
+            pass
+
+        def log_parser(self, log: str) -> dict[str, str]:
+            return {}
+
+    registry.register_profile(TestProfile)
+
+    # Instance with org-prefixed repo field (e.g. written by gather --user)
+    instance = {
+        KEY_INSTANCE_ID: "test__test-repo.12345678.some_suffix",
+        "repo": "some-user/test__test-repo.12345678",
+    }
     profile = registry.get_from_inst(instance)
     assert isinstance(profile, TestProfile)
     assert profile.owner == "test"

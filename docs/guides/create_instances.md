@@ -51,6 +51,14 @@ python -m swesmith.bug_gen.llm.modify $repo \
   --config_file configs/bug_gen/lm_modify.yml
 ```
 
+The `--model` flag accepts any [litellm model string](https://docs.litellm.ai/docs/providers). For example, to use AWS Bedrock:
+```bash
+python -m swesmith.bug_gen.llm.modify $repo \
+  --n_bugs 1 \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --config_file configs/bug_gen/lm_modify.yml
+```
+
 To prompt an LM to rewrite a function from scratch:
 ```bash
 python -m swesmith.bug_gen.llm.rewrite $repo \

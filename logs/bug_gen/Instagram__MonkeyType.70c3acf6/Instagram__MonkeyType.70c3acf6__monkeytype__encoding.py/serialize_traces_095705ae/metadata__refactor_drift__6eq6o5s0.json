@@ -1,0 +1,36 @@
+{
+  "cost": 0.0089067,
+  "explanation": "Refactor the generator into a cleaner list-comprehension style that collects results, making the error handling more explicit and the function's behavior easier to reason about. Instead of a generator with a try/except per item, we collect successfully serialized rows into a list.\n\nRefactored Code:",
+  "output": "Refactoring rationale:\nRefactor the generator into a cleaner list-comprehension style that collects results, making the error handling more explicit and the function's behavior easier to reason about. Instead of a generator with a try/except per item, we collect successfully serialized rows into a list.\n\nRefactored Code:\n```python\ndef serialize_traces(traces: Iterable[CallTrace]) -> Iterable[CallTraceRow]:\n    \"\"\"Serialize an iterable of CallTraces to an iterable of CallTraceRow.\n\n    Catches and logs exceptions, so a failure to serialize one CallTrace doesn't\n    lose all traces.\n\n    \"\"\"\n    rows = []\n    for trace in traces:\n        try:\n            rows.append(CallTraceRow.from_trace(trace))\n        except Exception:\n            logger.exception(\"Failed to serialize trace\")\n            continue\n    return rows\n```",
+  "rewrite": "def serialize_traces(traces: Iterable[CallTrace]) -> Iterable[CallTraceRow]:\n    \"\"\"Serialize an iterable of CallTraces to an iterable of CallTraceRow.\n\n    Catches and logs exceptions, so a failure to serialize one CallTrace doesn't\n    lose all traces.\n\n    \"\"\"\n    rows = []\n    for trace in traces:\n        try:\n            rows.append(CallTraceRow.from_trace(trace))\n        except Exception:\n            logger.exception(\"Failed to serialize trace\")\n            continue\n    return rows",
+  "strategy": "refactor_drift",
+  "target_function": "serialize_traces",
+  "callees": [
+    "CallTraceRow.from_trace"
+  ],
+  "callers": [],
+  "cross_file_usages": [
+    {
+      "file": "tests/test_encoding.py",
+      "function": "test_log_failure_and_continue",
+      "imported_names": [
+        "CallTraceRow",
+        "maybe_decode_type",
+        "maybe_encode_type",
+        "type_from_dict",
+        "type_from_json",
+        "type_to_dict",
+        "type_to_json",
+        "serialize_traces"
+      ]
+    },
+    {
+      "file": "monkeytype/db/sqlite.py",
+      "function": "add",
+      "imported_names": [
+        "CallTraceRow",
+        "serialize_traces"
+      ]
+    }
+  ]
+}

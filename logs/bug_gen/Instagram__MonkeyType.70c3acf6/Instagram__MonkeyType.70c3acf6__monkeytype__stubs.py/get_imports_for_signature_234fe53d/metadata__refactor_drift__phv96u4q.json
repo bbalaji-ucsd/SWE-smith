@@ -1,0 +1,43 @@
+{
+  "cost": 0.011639100000000001,
+  "explanation": "Simplify the logic by collecting all annotations (parameters + return) into a single loop, and merge imports in a unified pass. This avoids the separate handling of return annotation and makes the code more concise. The `Optional` wrapping logic is also cleaned up using a more Pythonic condition.\n\nRefactored Code:",
+  "output": "Refactoring rationale:\nSimplify the logic by collecting all annotations (parameters + return) into a single loop, and merge imports in a unified pass. This avoids the separate handling of return annotation and makes the code more concise. The `Optional` wrapping logic is also cleaned up using a more Pythonic condition.\n\nRefactored Code:\n```python\ndef get_imports_for_signature(sig: inspect.Signature) -> ImportMap:\n    \"\"\"Return the imports (module, name) needed for all types in annotations\"\"\"\n    imports = ImportMap()\n    for param in sig.parameters.values():\n        param_imports = get_imports_for_annotation(param.annotation)\n        if not _is_optional(param.annotation) and param.default is not None:\n            imports[\"typing\"].add(\"Optional\")\n        imports.merge(param_imports)\n    return_imports = get_imports_for_annotation(sig.return_annotation)\n    imports.merge(return_imports)\n    return imports\n```",
+  "rewrite": "def get_imports_for_signature(sig: inspect.Signature) -> ImportMap:\n    \"\"\"Return the imports (module, name) needed for all types in annotations\"\"\"\n    imports = ImportMap()\n    for param in sig.parameters.values():\n        param_imports = get_imports_for_annotation(param.annotation)\n        if not _is_optional(param.annotation) and param.default is not None:\n            imports[\"typing\"].add(\"Optional\")\n        imports.merge(param_imports)\n    return_imports = get_imports_for_annotation(sig.return_annotation)\n    imports.merge(return_imports)\n    return imports",
+  "strategy": "refactor_drift",
+  "target_function": "get_imports_for_signature",
+  "callees": [
+    "_is_optional",
+    "ImportMap.merge",
+    "get_imports_for_annotation"
+  ],
+  "callers": [
+    "build_module_stubs"
+  ],
+  "cross_file_usages": [
+    {
+      "file": "tests/test_stubs.py",
+      "function": "test_default_none_parameter_imports",
+      "imported_names": [
+        "AttributeStub",
+        "ClassStub",
+        "ExistingAnnotationStrategy",
+        "FunctionDefinition",
+        "FunctionStub",
+        "FunctionKind",
+        "ImportBlockStub",
+        "ImportMap",
+        "ModuleStub",
+        "ReplaceTypedDictsWithStubs",
+        "StubIndexBuilder",
+        "build_module_stubs",
+        "get_imports_for_annotation",
+        "get_imports_for_signature",
+        "render_annotation",
+        "render_signature",
+        "shrink_traced_types",
+        "update_signature_args",
+        "update_signature_return"
+      ]
+    }
+  ]
+}

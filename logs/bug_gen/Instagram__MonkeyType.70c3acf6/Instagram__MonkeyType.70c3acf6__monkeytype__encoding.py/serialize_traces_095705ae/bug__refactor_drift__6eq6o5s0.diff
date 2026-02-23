@@ -1,0 +1,17 @@
+diff --git a/monkeytype/encoding.py b/monkeytype/encoding.py
+index ef789b0..a215155 100644
+--- a/monkeytype/encoding.py
++++ b/monkeytype/encoding.py
+@@ -230,8 +230,11 @@ def serialize_traces(traces: Iterable[CallTrace]) -> Iterable[CallTraceRow]:
+     lose all traces.
+ 
+     """
++    rows = []
+     for trace in traces:
+         try:
+-            yield CallTraceRow.from_trace(trace)
++            rows.append(CallTraceRow.from_trace(trace))
+         except Exception:
+             logger.exception("Failed to serialize trace")
++            continue
++    return rows

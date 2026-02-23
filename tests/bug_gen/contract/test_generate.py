@@ -180,3 +180,81 @@ class TestRefactorDriftStrategy:
     def test_valid_strategies_contains_both(self):
         assert "contract_violation" in VALID_STRATEGIES
         assert "refactor_drift" in VALID_STRATEGIES
+
+
+class TestMultiSiteGeneration:
+    def test_extract_two_code_blocks(self):
+        from swesmith.bug_gen.contract.generate import _extract_two_code_blocks
+
+        content = (
+            "Explanation:\nChanged return type.\n\n"
+            "Target function:\n```python\ndef foo():\n    return []\n```\n\n"
+            "Coordinated caller:\n```python\ndef bar():\n    return foo()\n```"
+        )
+        target, caller = _extract_two_code_blocks(content)
+        assert target is not None
+        assert caller is not None
+        assert "def foo" in target
+        assert "def bar" in caller
+
+    def test_extract_two_code_blocks_missing(self):
+        from swesmith.bug_gen.contract.generate import _extract_two_code_blocks
+
+        content = "No code blocks here."
+        target, caller = _extract_two_code_blocks(content)
+        assert target is None
+        assert caller is None
+
+    def test_extract_two_code_blocks_only_one(self):
+        from swesmith.bug_gen.contract.generate import _extract_two_code_blocks
+
+        content = "Only one:\n```python\ndef foo():\n    pass\n```"
+        target, caller = _extract_two_code_blocks(content)
+        assert target is None
+        assert caller is None
+
+    def test_gen_multi_site_returns_pairs(self):
+        from swesmith.bug_gen.contract.analyze import MultiSiteContext, FunctionInfo, CrossFileUsage
+        from swesmith.bug_gen.contract.generate import gen_multi_site_violation
+        import ast
+
+        target = FunctionInfo(
+            name="target_fn", qualified_name="target_fn",
+            node=ast.parse("def target_fn(): pass").body[0],
+            line_start=1, line_end=1, source="def target_fn(): pass",
+        )
+        caller = CrossFileUsage(
+            file_path="other.py", function_name="caller_fn",
+            source="def caller_fn(): target_fn()", imported_names=["target_fn"],
+        )
+        other = CrossFileUsage(
+            file_path="third.py", function_name="other_fn",
+            source="def other_fn(): target_fn()", imported_names=["target_fn"],
+        )
+        ctx = MultiSiteContext(
+            target=target, target_file_path="mod.py", target_file_source="def target_fn(): pass",
+            coordinated_caller=caller, other_callers=[other],
+            in_file_callees=[], in_file_callers=[],
+        )
+
+        mock_choice = MagicMock()
+        mock_choice.message.content = (
+            "Explanation:\nChanged return.\n\n"
+            "Target function:\n```python\ndef target_fn():\n    return None\n```\n\n"
+            "Coordinated caller:\n```python\ndef caller_fn():\n    r = target_fn()\n    if r is None: return\n```"
+        )
+        mock_response = MagicMock()
+        mock_response.choices = [mock_choice]
+
+        with (
+            patch("swesmith.bug_gen.contract.generate.completion", return_value=mock_response),
+            patch("swesmith.bug_gen.contract.generate.completion_cost", return_value=0.002),
+        ):
+            pairs = gen_multi_site_violation(ctx, "test-model", "/tmp", n_bugs=1)
+
+        assert len(pairs) == 1
+        target_bug, caller_bug = pairs[0]
+        assert target_bug.strategy == "multi_site"
+        assert caller_bug.strategy == "multi_site"
+        assert "def target_fn" in target_bug.rewrite
+        assert "def caller_fn" in caller_bug.rewrite

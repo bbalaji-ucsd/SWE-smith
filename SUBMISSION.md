@@ -1,13 +1,25 @@
-# SWE-smith: Contract-Violation & Refactoring-Drift Bug Generation
+# SWE-smith: Contract-Violation, Refactoring-Drift & Multi-Site Bug Generation
 
 ## Overview
 
-This submission adds two new bug generation strategies to SWE-smith that produce harder, more realistic bugs by analyzing inter-function dependencies:
+This submission adds three new bug generation strategies to SWE-smith that produce harder, more realistic bugs by analyzing inter-function dependencies:
 
-1. **Contract Violation** (`--strategy contract_violation`): Asks an LLM to rewrite a function with a bug that violates the implicit contract between caller and callee.
-2. **Refactoring Drift** (`--strategy refactor_drift`): Asks an LLM to *refactor* a function as a plausible code-quality improvement, where the bug is a subtle behavioral drift hidden inside what looks like a legitimate cleanup.
+1. **Contract Violation** (`--strategy contract_violation`): Rewrites a function with a bug that violates the implicit contract between caller and callee.
+2. **Refactoring Drift** (`--strategy refactor_drift`): Refactors a function as a plausible code-quality improvement, where the bug is a subtle behavioral drift hidden inside what looks like a legitimate cleanup.
+3. **Multi-Site** (`--strategy multi_site`): Simulates a partial API migration — rewrites both a target function AND one cross-file caller with a new contract, leaving other callers un-updated. Produces multi-file bugs.
 
-Both strategies support single-file and cross-file (`--cross_file`) dependency analysis. Cross-file mode scans the repository for functions imported by other modules and shows the LLM cross-module context, producing bugs that cascade across module boundaries.
+All strategies support single-file and cross-file (`--cross_file`) dependency analysis. Multi-site automatically uses cross-file analysis.
+
+## Research Motivation
+
+Existing SWE-smith methods generate single-function, single-file bugs. Real-world bugs often involve **cross-module contract violations** — a function's behavior changes and some callers are updated but others are not. This is especially common during refactoring, API evolution, and partial migrations.
+
+**Multi-site** is the most novel contribution: it's the only SWE-smith strategy that produces **coordinated multi-file bugs**. These are harder for LLM agents because:
+- The agent must identify that TWO files are wrong (not just one)
+- The coordinated caller's change looks intentional, making it harder to detect
+- Fixing requires understanding the contract between modules, not just local code
+
+From a research perspective, multi-site bugs test whether coding agents can reason about **cross-module dependencies** — a capability that single-file benchmarks don't evaluate.
 
 ## Installation
 
@@ -32,68 +44,61 @@ docker images | grep MonkeyType
 
 ## Replication Steps
 
-Below are the exact commands to replicate the bug generation pipeline with the new methods. Replace `$repo` with `Instagram__MonkeyType.70c3acf6` (or any other repo with a built Docker image).
+Replace `$repo` with `Instagram__MonkeyType.70c3acf6` (or any repo with a built Docker image).
 
 ```bash
 export repo=Instagram__MonkeyType.70c3acf6
 ```
 
-### Step 1: Generate bugs (Contract Violation, cross-file mode)
+### Step 1: Generate bugs
 
 ```bash
+# Contract Violation (cross-file mode)
 python -m swesmith.bug_gen.contract.generate $repo \
   --model bedrock/us.anthropic.claude-sonnet-4-6 \
-  --max_bugs 5 \
-  --cross_file \
-  --strategy contract_violation \
+  --max_bugs 5 --cross_file --strategy contract_violation \
+  --user <github_username>
+
+# Refactoring Drift (cross-file mode)
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --max_bugs 5 --cross_file --strategy refactor_drift \
+  --user <github_username>
+
+# Multi-Site (automatically cross-file)
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --max_bugs 5 --strategy multi_site \
   --user <github_username>
 ```
 
-### Step 2: Generate bugs (Refactoring Drift, cross-file mode)
-
-```bash
-python -m swesmith.bug_gen.contract.generate $repo \
-  --model bedrock/us.anthropic.claude-sonnet-4-6 \
-  --max_bugs 5 \
-  --cross_file \
-  --strategy refactor_drift \
-  --user <github_username>
-```
-
-### Step 3: Collect patches
+### Step 2: Collect patches
 
 ```bash
 python -m swesmith.bug_gen.collect_patches logs/bug_gen/$repo
 ```
 
-### Step 4: Validate bugs
-
-Runs each candidate patch in Docker, checks which ones break at least one test:
+### Step 3: Validate bugs
 
 ```bash
 python -m swesmith.harness.valid logs/bug_gen/${repo}_all_patches.json
 ```
 
-### Step 5: Gather valid instances
-
-Converts validated patches into task instances (SWE-bench format):
+### Step 4: Gather valid instances
 
 ```bash
-python -m swesmith.harness.gather logs/run_validation/$repo \
-  --user <github_username>
+python -m swesmith.harness.gather logs/run_validation/$repo --user <github_username>
 ```
 
-### Step 6: Evaluate with gold patches
-
-Verifies that the gold (reverse) patch resolves each instance:
+### Step 5: Evaluate with gold patches
 
 ```bash
 python -m swesmith.harness.eval \
   -d logs/task_insts/${repo}.json \
-  --run_id eval_contract
+  --run_id eval_all
 ```
 
-### Step 7: Generate issue descriptions
+### Step 6: Generate issue descriptions
 
 ```bash
 python -m swesmith.issue_gen.generate \
@@ -104,7 +109,7 @@ python -m swesmith.issue_gen.generate \
 
 ## Generated Instances
 
-All generated artifacts are included in the `logs/` directory:
+All generated artifacts are in the `logs/` directory:
 
 | Directory | Contents |
 |---|---|
@@ -116,11 +121,27 @@ All generated artifacts are included in the `logs/` directory:
 
 ### Summary of results
 
-| Strategy | Generated | Valid | Validation Rate | Eval (gold) | Issues |
+| Strategy | Generated | Valid | Validation Rate | Gold Eval | Issues |
 |---|---|---|---|---|---|
-| Contract Violation (cross-file) | 5 | 4 | 80% | 4/4 resolved | 4 |
-| Refactoring Drift (cross-file) | 5 | 3 | 60% | 3/3 resolved | 3 |
-| **Total** | **10** | **7** | **70%** | **7/7** | **7** |
+| Contract Violation (cross-file) | 5 | 4 | 80% | 4/4 ✓ | 4 |
+| Refactoring Drift (cross-file) | 5 | 2 | 40% | 2/2 ✓ | 2 |
+| Multi-Site | 5 | 4 | 80% | 4/4 ✓ | 4 |
+| **Total** | **15** | **10** | **67%** | **10/10** | **10** |
+
+### Difficulty analysis
+
+| Bug ID | Strategy | Files | Diff | F2P | Difficulty |
+|---|---|---|---|---|---|
+| `refactor_drift__teococyw` | refactor_drift | 1 | +1/-1 | 1 | Hard — `if (x is None) or (x == "null")` → `if not x`, minimal signal |
+| `multi_site__ugn4y34m` | multi_site | 2 | +3/-3 | 5 | Hard — `pascal_case` returns list instead of string, 2-file fix |
+| `multi_site__jb2mkutw` | multi_site | 2 | +5/-3 | 9 | Medium — return type change across compat.py → encoding.py |
+| `multi_site__x0jlc96y` | multi_site | 2 | +7/-5 | 31 | Medium — tuple→dict return type, 2-file coordinated change |
+| `multi_site__lyvaed11` | multi_site | 2 | +2/-2 | 44 | Medium — return type change across util.py → cli.py, many tests |
+| `contract_violation__phv96u4q` | contract_violation | 1 | +1/-1 | 12 | Medium — `is None` → `is not None` condition inversion |
+| `contract_violation__2opq6lvu` | contract_violation | 1 | +1/-1 | 1 | Medium — `except Exception` → `except TypeError` |
+| `contract_violation__fu4p89oi` | contract_violation | 1 | +3/-1 | 1 | Medium — `"null"` handling split into separate branch |
+| `contract_violation__ssmtghz1` | contract_violation | 1 | +2/-0 | 13 | Medium — strips `elem_types` from generic type dicts |
+| `refactor_drift__05o1fv9q` | refactor_drift | 1 | +2/-1 | 1 | Medium — `json.loads` → `ast.literal_eval` |
 
 ### Valid instance IDs
 
@@ -132,32 +153,35 @@ Contract Violation:
 
 Refactoring Drift:
 - `Instagram__MonkeyType.70c3acf6.refactor_drift__05o1fv9q` (1 test broken)
-- `Instagram__MonkeyType.70c3acf6.refactor_drift__phv96u4q` (12 tests broken)
 - `Instagram__MonkeyType.70c3acf6.refactor_drift__teococyw` (1 test broken)
+
+Multi-Site:
+- `Instagram__MonkeyType.70c3acf6.multi_site__jb2mkutw` (9 tests broken, 2 files)
+- `Instagram__MonkeyType.70c3acf6.multi_site__lyvaed11` (44 tests broken, 2 files)
+- `Instagram__MonkeyType.70c3acf6.multi_site__ugn4y34m` (5 tests broken, 2 files)
+- `Instagram__MonkeyType.70c3acf6.multi_site__x0jlc96y` (31 tests broken, 2 files)
 
 ## Implementation Files
 
 Core implementation:
-- `swesmith/bug_gen/contract/analyze.py` — Static analysis: AST call graph, cross-file import resolution
+- `swesmith/bug_gen/contract/analyze.py` — Static analysis: AST call graph, cross-file import resolution, multi-site context building
 - `swesmith/bug_gen/contract/generate.py` — Generation pipeline with `--strategy` flag
-- `swesmith/bug_gen/contract/prompts.py` — System prompts for both strategies
+- `swesmith/bug_gen/contract/prompts.py` — System prompts for all three strategies
 - `swesmith/bug_gen/contract/README.md` — Detailed documentation
 
 Configuration:
 - `configs/bug_gen/contract_violation.yml`
 - `configs/bug_gen/refactor_drift.yml`
+- `configs/bug_gen/multi_site.yml`
 
 Tests:
 - `tests/bug_gen/contract/test_analyze.py`
 - `tests/bug_gen/contract/test_generate.py`
 - `tests/bug_gen/contract/test_prompts.py`
 
-Documentation:
-- `docs/guides/create_instances.md` — Updated with contract violation and refactoring drift sections
-
 ## Running Tests
 
 ```bash
-python -m pytest tests/bug_gen/contract/ -v   # 35 tests
-python -m pytest tests/ -q                     # 669 tests (full suite)
+python -m pytest tests/bug_gen/contract/ -v   # 48 tests
+python -m pytest tests/ -q                     # 682 tests (full suite)
 ```

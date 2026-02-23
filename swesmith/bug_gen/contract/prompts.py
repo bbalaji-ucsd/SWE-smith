@@ -6,7 +6,7 @@ we show it the function *and* its callers/callees, then ask it to introduce a
 bug that violates the implicit contract between them.
 """
 
-from swesmith.bug_gen.contract.analyze import CrossFileUsage, DependencyContext
+from swesmith.bug_gen.contract.analyze import CrossFileUsage, DependencyContext, MultiSiteContext
 
 
 SYSTEM_PROMPT_CONTRACT = """\
@@ -215,4 +215,115 @@ def build_messages(
     return [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
+    ]
+
+
+SYSTEM_PROMPT_MULTI_SITE = """\
+You are an expert software engineer simulating a coordinated API change that \
+is only partially propagated across a codebase.
+
+You will be given:
+1. A **target function** in one file.
+2. A **coordinated caller** in a DIFFERENT file that imports and calls the target.
+3. **Other callers** in yet other files that also import and call the target.
+
+Your task: rewrite BOTH the target function AND the coordinated caller so that \
+they work together with a new, slightly different contract (e.g., different \
+return type, different parameter semantics, different error handling). The \
+coordinated caller should be updated to match the new contract.
+
+The OTHER callers (shown for context) must NOT be updated — they still expect \
+the OLD contract. This mismatch is the bug: a partial migration where some \
+call sites were updated but others were not.
+
+Examples of partial-migration bugs:
+- Target now returns ``None`` instead of raising an exception on error; the \
+  coordinated caller checks for ``None``, but other callers still catch the exception.
+- Target now returns a dict instead of a tuple; the coordinated caller unpacks \
+  the dict, but other callers still unpack a tuple.
+- Target now expects a keyword argument; the coordinated caller passes it, but \
+  other callers still use positional args.
+- Target now filters out invalid items before returning; the coordinated caller \
+  is updated, but other callers still do their own filtering and now double-filter.
+- Target now returns items in a different order; the coordinated caller is \
+  updated to handle it, but other callers assume the old order.
+
+Rules:
+- You MUST rewrite BOTH the target function AND the coordinated caller.
+- The target's function signature (name, parameters) MUST NOT change.
+- The coordinated caller's function signature MUST NOT change.
+- The rewritten pair must be internally consistent — they should work correctly \
+  together.
+- The change MUST break at least one of the OTHER callers (which are not updated).
+- No syntax errors, no import errors.
+- Do NOT add comments revealing the bug.
+
+IMPORTANT — maximize the chance of breaking tests:
+- Change something on the PRIMARY code path of the target function.
+- Prefer changes to return values, side effects, or exception behavior — these \
+  are what callers depend on most.
+- The coordinated caller update should look like a natural adaptation to the \
+  target's change.
+
+Format your response as:
+
+Explanation:
+<brief description of the contract change and why un-updated callers will break>
+
+Target function:
+```
+<rewritten target function>
+```
+
+Coordinated caller:
+```
+<rewritten coordinated caller function>
+```"""
+
+
+def build_multi_site_messages(ctx: MultiSiteContext) -> list[dict[str, str]]:
+    """Build LLM messages for multi-site contract violation."""
+    parts = [
+        f"**Target file:** `{ctx.target_file_path}`\n",
+        "## Target function to rewrite:\n",
+        _format_function_block("Target", ctx.target.qualified_name, ctx.target.source),
+    ]
+
+    if ctx.in_file_callees:
+        parts.append("\n## Functions called BY the target (same file, for context):\n")
+        for callee in ctx.in_file_callees[:3]:
+            parts.append(
+                _format_function_block("Callee", callee.qualified_name, callee.source)
+            )
+
+    cc = ctx.coordinated_caller
+    parts.append(
+        f"\n## Coordinated caller (DIFFERENT file — rewrite this too):\n"
+        f"**File:** `{cc.file_path}` (imports: {', '.join(cc.imported_names)})\n"
+        f"```python\n{cc.source}\n```"
+    )
+
+    if ctx.other_callers:
+        parts.append(
+            "\n## Other callers (DO NOT rewrite — these should break):\n"
+        )
+        for usage in ctx.other_callers[:5]:
+            parts.append(
+                f"### From `{usage.file_path}` (imports: {', '.join(usage.imported_names)}):\n"
+                f"```python\n{usage.source}\n```"
+            )
+
+    parts.append(
+        "\n---\n"
+        "Now rewrite BOTH the **target function** and the **coordinated caller** "
+        "with a new, slightly different contract. The rewritten pair must work "
+        "together, but the OTHER callers (not rewritten) must break because they "
+        "still expect the old contract. "
+        "Remember: no signature changes, no comments revealing the bug, "
+        "and both functions must still parse correctly."
+    )
+
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT_MULTI_SITE},
+        {"role": "user", "content": "\n".join(parts)},
     ]

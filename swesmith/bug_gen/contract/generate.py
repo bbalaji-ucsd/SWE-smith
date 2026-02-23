@@ -28,10 +28,13 @@ from litellm import completion
 from litellm.cost_calculator import completion_cost
 from swesmith.bug_gen.contract.analyze import (
     DependencyContext,
+    MultiSiteContext,
     build_dependency_contexts,
     build_cross_file_contexts,
+    build_multi_site_contexts,
+    extract_functions,
 )
-from swesmith.bug_gen.contract.prompts import build_messages
+from swesmith.bug_gen.contract.prompts import build_messages, build_multi_site_messages
 from swesmith.bug_gen.llm.utils import extract_code_block
 from swesmith.bug_gen.utils import (
     apply_code_change,
@@ -56,7 +59,7 @@ logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 litellm.drop_params = True
 litellm.suppress_debug_info = True
 
-VALID_STRATEGIES = ("contract_violation", "refactor_drift")
+VALID_STRATEGIES = ("contract_violation", "refactor_drift", "multi_site")
 STRATEGY_NAME = "contract_violation"  # default, overridden by --strategy
 
 
@@ -76,6 +79,109 @@ def _find_matching_entity(
         if entity.file_path == ctx.file_path and entity.name == ctx.target.name:
             return entity
     return None
+
+def _extract_two_code_blocks(content: str) -> tuple[str | None, str | None]:
+    """Extract two code blocks from LLM response (target + caller)."""
+    blocks = []
+    parts = content.split("```")
+    for i in range(1, len(parts), 2):
+        block = parts[i]
+        # Strip optional language tag (e.g., "python\n")
+        if block.startswith(("python\n", "py\n")):
+            block = block.split("\n", 1)[1]
+        block = block.strip()
+        if block:
+            blocks.append(block)
+    if len(blocks) >= 2:
+        return blocks[0], blocks[1]
+    return None, None
+
+
+def _find_caller_entity(
+    caller_file_path: str, caller_func_name: str, repo_root: str
+) -> CodeEntity | None:
+    """Find a CodeEntity for a cross-file caller function."""
+    abs_path = os.path.join(repo_root, caller_file_path)
+    if not os.path.exists(abs_path):
+        return None
+    functions = extract_functions(abs_path)
+    for func in functions:
+        if func.name == caller_func_name:
+            # Build a minimal CodeEntity
+            with open(abs_path, "r") as f:
+                src = f.read()
+            lines = src.splitlines(keepends=True)
+            # Detect indent
+            first_line = lines[func.line_start - 1] if func.line_start <= len(lines) else ""
+            stripped = first_line.lstrip()
+            indent_chars = len(first_line) - len(stripped)
+            # Guess indent size (4 spaces default)
+            indent_size = 4
+            indent_level = indent_chars // indent_size if indent_size else 0
+            return CodeEntity(
+                file_path=abs_path,
+                indent_level=indent_level,
+                indent_size=indent_size,
+                line_end=func.line_end,
+                line_start=func.line_start,
+                node=func.node,
+                src_code=func.source,
+            )
+    return None
+
+
+def gen_multi_site_violation(
+    ctx: MultiSiteContext,
+    model: str,
+    repo_root: str,
+    n_bugs: int = 1,
+) -> list[tuple[BugRewrite, BugRewrite]]:
+    """
+    Generate a multi-site contract violation: rewrite target + one caller.
+
+    Returns list of (target_rewrite, caller_rewrite) tuples.
+    """
+    messages = build_multi_site_messages(ctx)
+    results = []
+
+    for _ in range(n_bugs):
+        try:
+            response: Any = completion(
+                model=model, messages=messages, n=1, temperature=1
+            )
+        except (litellm.ContextWindowExceededError, Exception) as e:
+            logging.warning(f"Multi-site LLM call failed for {ctx.target.qualified_name}: {e}")
+            continue
+
+        cost = completion_cost(completion_response=response)
+        content = response.choices[0].message.content
+        target_code, caller_code = _extract_two_code_blocks(content)
+        if not target_code or not caller_code:
+            logging.warning(f"Could not extract two code blocks for {ctx.target.qualified_name}")
+            continue
+
+        explanation = content.split("```")[0].strip()
+        if "Explanation:" in content:
+            explanation = content.split("Explanation:")[-1].split("```")[0].strip()
+
+        target_rewrite = BugRewrite(
+            rewrite=target_code,
+            explanation=explanation,
+            cost=cost / 2,
+            strategy="multi_site",
+            output=content,
+        )
+        caller_rewrite = BugRewrite(
+            rewrite=caller_code,
+            explanation=f"Coordinated caller update: {explanation}",
+            cost=cost / 2,
+            strategy="multi_site",
+            output=content,
+        )
+        results.append((target_rewrite, caller_rewrite))
+
+    return results
+
 
 
 def gen_contract_violation(
@@ -154,6 +260,156 @@ def main(
         print(f"No entities found in {repo}.")
         return
 
+    # Set up logging
+    log_dir = LOG_DIR_BUG_GEN / repo
+    log_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Logging bugs to {log_dir}")
+
+    if strategy == "multi_site":
+        _run_multi_site(repo, model, entities, n_bugs, n_workers, max_bugs, seed, log_dir)
+    else:
+        _run_single_target(repo, model, entities, n_bugs, n_workers, max_bugs, seed,
+                           min_callees, cross_file, strategy, log_dir)
+
+    shutil.rmtree(repo)
+
+
+def _run_multi_site(
+    repo: str,
+    model: str,
+    entities: list[CodeEntity],
+    n_bugs: int,
+    n_workers: int,
+    max_bugs: int,
+    seed: int,
+    log_dir,
+):
+    """Run multi-site contract violation generation."""
+    print("Analyzing multi-site cross-file dependencies (need 2+ cross-file callers)...")
+    ms_contexts = build_multi_site_contexts(repo, min_cross_file_usages=2)
+    print(f"Found {len(ms_contexts)} multi-site candidates.")
+
+    if not ms_contexts:
+        print("No multi-site candidates found (need functions with 2+ cross-file callers).")
+        return
+
+    if max_bugs > 0:
+        max_contexts = max_bugs // max(n_bugs, 1)
+        if max_contexts < len(ms_contexts):
+            random.shuffle(ms_contexts)
+            ms_contexts = ms_contexts[:max_contexts]
+            print(f"Limited to {len(ms_contexts)} contexts (max_bugs={max_bugs})")
+
+    def _process_ms_context(ctx: MultiSiteContext):
+        # Find the target entity
+        target_entity = None
+        for entity in entities:
+            if (entity.file_path == ctx.target_file_path
+                    and entity.line_start == ctx.target.line_start
+                    and entity.line_end == ctx.target.line_end):
+                target_entity = entity
+                break
+        if target_entity is None:
+            for entity in entities:
+                if entity.file_path == ctx.target_file_path and entity.name == ctx.target.name:
+                    target_entity = entity
+                    break
+        if target_entity is None:
+            return {"cost": 0.0, "n_bugs_generated": 0, "n_generation_failed": 1}
+
+        # Find the caller entity
+        caller_entity = _find_caller_entity(
+            ctx.coordinated_caller.file_path,
+            ctx.coordinated_caller.function_name,
+            repo,
+        )
+        if caller_entity is None:
+            logging.warning(f"Could not find caller entity for {ctx.coordinated_caller.function_name}")
+            return {"cost": 0.0, "n_bugs_generated": 0, "n_generation_failed": 1}
+
+        pairs = gen_multi_site_violation(ctx, model, repo, n_bugs)
+        cost = sum(t.cost + c.cost for t, c in pairs)
+        n_generated, n_failed = 0, 0
+
+        for target_bug, caller_bug in pairs:
+            bug_dir = get_bug_directory(log_dir, target_entity)
+            bug_dir.mkdir(parents=True, exist_ok=True)
+            combined_hash = target_bug.get_hash()[:4] + caller_bug.get_hash()[:4]
+            uuid_str = f"multi_site__{combined_hash}"
+            metadata_path = f"{PREFIX_METADATA}__{uuid_str}.json"
+            bug_path = f"{PREFIX_BUG}__{uuid_str}.diff"
+
+            try:
+                metadata = {
+                    **target_bug.to_dict(),
+                    "target_function": ctx.target.qualified_name,
+                    "coordinated_caller": {
+                        "file": ctx.coordinated_caller.file_path,
+                        "function": ctx.coordinated_caller.function_name,
+                    },
+                    "other_callers": [
+                        {"file": u.file_path, "function": u.function_name}
+                        for u in ctx.other_callers
+                    ],
+                }
+                with open(bug_dir / metadata_path, "w") as f:
+                    json.dump(metadata, f, indent=2)
+
+                # Apply BOTH changes before getting the patch
+                apply_code_change(target_entity, target_bug)
+                apply_code_change(caller_entity, caller_bug)
+                patch = get_patch(repo, reset_changes=True)
+                if not patch:
+                    raise ValueError("Patch is empty.")
+                with open(bug_dir / bug_path, "w") as f:
+                    f.write(patch)
+            except Exception as e:
+                logging.warning(
+                    f"Error applying multi-site bug for {ctx.target.qualified_name}: {e}"
+                )
+                (bug_dir / metadata_path).unlink(missing_ok=True)
+                # Reset repo in case of partial apply
+                import subprocess
+                subprocess.run(["git", "-C", repo, "reset", "--hard"],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["git", "-C", repo, "clean", "-fdx"],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                n_failed += 1
+                continue
+            else:
+                n_generated += 1
+
+        return {"cost": cost, "n_bugs_generated": n_generated, "n_generation_failed": n_failed}
+
+    stats = {"cost": 0.0, "n_bugs_generated": 0, "n_generation_failed": 0}
+    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+        futures = [executor.submit(_process_ms_context, ctx) for ctx in ms_contexts]
+        with logging_redirect_tqdm():
+            with tqdm(total=len(ms_contexts), desc="Generating (multi_site)") as pbar:
+                for future in as_completed(futures):
+                    result = future.result()
+                    for k, v in result.items():
+                        stats[k] += v
+                    pbar.set_postfix(stats, refresh=True)
+                    pbar.update(1)
+
+    print(f"\nGeneration complete. Stats: {stats}")
+
+
+def _run_single_target(
+    repo: str,
+    model: str,
+    entities: list[CodeEntity],
+    n_bugs: int,
+    n_workers: int,
+    max_bugs: int,
+    seed: int,
+    min_callees: int,
+    cross_file: bool,
+    strategy: str,
+    log_dir,
+):
+    """Run single-target strategies (contract_violation, refactor_drift)."""
     all_contexts: list[DependencyContext] = []
 
     if cross_file:
@@ -179,7 +435,6 @@ def main(
 
     if not all_contexts:
         print("No dependency contexts found. Try lowering --min_callees.")
-        shutil.rmtree(repo)
         return
 
     # Limit contexts if max_bugs is set
@@ -189,11 +444,6 @@ def main(
             random.shuffle(all_contexts)
             all_contexts = all_contexts[:max_contexts]
             print(f"Limited to {len(all_contexts)} contexts (max_bugs={max_bugs})")
-
-    # Set up logging
-    log_dir = LOG_DIR_BUG_GEN / repo
-    log_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Logging bugs to {log_dir}")
 
     def _process_context(ctx: DependencyContext):
         entity = _find_matching_entity(entities, ctx)
@@ -261,7 +511,6 @@ def main(
                     pbar.update(1)
 
     print(f"\nGeneration complete. Stats: {stats}")
-    shutil.rmtree(repo)
 
 
 if __name__ == "__main__":

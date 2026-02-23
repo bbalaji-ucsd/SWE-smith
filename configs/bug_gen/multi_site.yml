@@ -1,0 +1,6 @@
+strategy: multi_site
+model: bedrock/us.anthropic.claude-sonnet-4-6
+max_bugs: 10
+n_workers: 1
+n_bugs: 1
+seed: 24

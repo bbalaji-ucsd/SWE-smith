@@ -50,6 +50,19 @@ class DependencyContext:
     cross_file_usages: list[CrossFileUsage] = field(default_factory=list)
 
 
+@dataclass
+class MultiSiteContext:
+    """Context for multi-site contract violation: a target, one coordinated caller, and remaining callers."""
+
+    target: FunctionInfo
+    target_file_path: str
+    target_file_source: str
+    coordinated_caller: CrossFileUsage  # the caller that will be updated WITH the target
+    other_callers: list[CrossFileUsage]  # callers that will NOT be updated (they break)
+    in_file_callees: list[FunctionInfo]
+    in_file_callers: list[FunctionInfo]
+
+
 class _CallCollector(ast.NodeVisitor):
     """Collect all function/method call names from an AST subtree."""
 
@@ -383,3 +396,104 @@ def build_cross_file_contexts(
             )
 
     return contexts
+
+def _is_test_file(file_path: str) -> bool:
+    """Check if a file path looks like a test file."""
+    parts = file_path.replace("\\", "/").split("/")
+    # Check directory components
+    for part in parts[:-1]:
+        if part in ("tests", "test", "testing"):
+            return True
+    # Check filename
+    fname = parts[-1]
+    return fname.startswith("test_") or fname.endswith("_test.py")
+
+
+def build_multi_site_contexts(
+    repo_root: str,
+    min_cross_file_usages: int = 2,
+    min_source_lines: int = 3,
+    max_source_lines: int = 150,
+) -> list[MultiSiteContext]:
+    """
+    Build multi-site contexts: functions with 2+ cross-file callers.
+
+    For each candidate, one caller is chosen as the "coordinated" caller
+    (will be rewritten alongside the target), and the rest become "other"
+    callers (will break because they weren't updated).
+
+    IMPORTANT: The coordinated caller must NOT be in a test file, because
+    the eval harness restores test files after applying the gold patch.
+    If the coordinated caller is a test file, the gold patch reversal would
+    be undone for that file, causing P2P test failures.
+
+    Requires at least ``min_cross_file_usages`` cross-file callers so that
+    at least one caller is left un-updated.
+    """
+    contexts: list[MultiSiteContext] = []
+
+    py_files = []
+    for root, dirs, files in os.walk(repo_root):
+        dirs[:] = [d for d in dirs if d not in ("tests", "test", ".git", "__pycache__")]
+        for f in files:
+            if f.endswith(".py"):
+                py_files.append(os.path.join(root, f))
+
+    for file_path in py_files:
+        try:
+            file_source = open(file_path, "r").read()
+        except (UnicodeDecodeError, OSError):
+            continue
+
+        functions = extract_functions(file_path)
+        if not functions:
+            continue
+
+        name_to_func = {f.name: f for f in functions}
+
+        for func in functions:
+            num_lines = func.line_end - func.line_start + 1
+            if num_lines < min_source_lines or num_lines > max_source_lines:
+                continue
+
+            cross_usages = find_cross_file_usages(
+                func.name, file_path, repo_root, max_usages=10
+            )
+            if len(cross_usages) < min_cross_file_usages:
+                continue
+
+            # Separate source callers from test callers.
+            # The coordinated caller must be a source file (not a test file)
+            # because the eval harness restores test files after gold patch.
+            source_callers = [u for u in cross_usages if not _is_test_file(u.file_path)]
+            test_callers = [u for u in cross_usages if _is_test_file(u.file_path)]
+
+            if not source_callers:
+                # No non-test callers available for coordinated update
+                continue
+
+            # Need at least 1 other caller (test or source) that will break
+            remaining = source_callers[1:] + test_callers
+            if not remaining:
+                continue
+
+            in_file_callees = [name_to_func[c] for c in func.calls if c in name_to_func]
+            in_file_callers = [name_to_func[c] for c in func.called_by if c in name_to_func]
+
+            coordinated = source_callers[0]
+            others = remaining
+
+            contexts.append(
+                MultiSiteContext(
+                    target=func,
+                    target_file_path=file_path,
+                    target_file_source=file_source,
+                    coordinated_caller=coordinated,
+                    other_callers=others,
+                    in_file_callees=in_file_callees,
+                    in_file_callers=in_file_callers,
+                )
+            )
+
+    return contexts
+

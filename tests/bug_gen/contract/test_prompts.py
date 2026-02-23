@@ -97,3 +97,70 @@ class TestBuildMessages:
             pytest.skip("No context with callers found")
         messages = build_messages(ctx_with_callers)
         assert "Caller" in messages[1]["content"]
+
+
+class TestBuildMultiSiteMessages:
+    def test_returns_system_and_user(self):
+        import ast
+        from swesmith.bug_gen.contract.analyze import (
+            FunctionInfo, CrossFileUsage, MultiSiteContext,
+        )
+        from swesmith.bug_gen.contract.prompts import (
+            build_multi_site_messages, SYSTEM_PROMPT_MULTI_SITE,
+        )
+
+        target = FunctionInfo(
+            name="encode", qualified_name="encode",
+            node=ast.parse("def encode(x): return str(x)").body[0],
+            line_start=1, line_end=1, source="def encode(x): return str(x)",
+        )
+        caller = CrossFileUsage(
+            file_path="cli.py", function_name="run",
+            source="def run():\n    encode(data)", imported_names=["encode"],
+        )
+        other = CrossFileUsage(
+            file_path="api.py", function_name="handle",
+            source="def handle():\n    encode(req)", imported_names=["encode"],
+        )
+        ctx = MultiSiteContext(
+            target=target, target_file_path="core.py",
+            target_file_source="def encode(x): return str(x)",
+            coordinated_caller=caller, other_callers=[other],
+            in_file_callees=[], in_file_callers=[],
+        )
+
+        messages = build_multi_site_messages(ctx)
+        assert len(messages) == 2
+        assert messages[0]["content"] == SYSTEM_PROMPT_MULTI_SITE
+        user = messages[1]["content"]
+        assert "encode" in user
+        assert "cli.py" in user
+        assert "api.py" in user
+        assert "DO NOT rewrite" in user
+
+    def test_contains_coordinated_caller_section(self):
+        import ast
+        from swesmith.bug_gen.contract.analyze import (
+            FunctionInfo, CrossFileUsage, MultiSiteContext,
+        )
+        from swesmith.bug_gen.contract.prompts import build_multi_site_messages
+
+        target = FunctionInfo(
+            name="fn", qualified_name="fn",
+            node=ast.parse("def fn(): pass").body[0],
+            line_start=1, line_end=1, source="def fn(): pass",
+        )
+        c1 = CrossFileUsage(file_path="a.py", function_name="a_fn",
+                            source="def a_fn(): fn()", imported_names=["fn"])
+        c2 = CrossFileUsage(file_path="b.py", function_name="b_fn",
+                            source="def b_fn(): fn()", imported_names=["fn"])
+        ctx = MultiSiteContext(
+            target=target, target_file_path="m.py", target_file_source="",
+            coordinated_caller=c1, other_callers=[c2],
+            in_file_callees=[], in_file_callers=[],
+        )
+
+        messages = build_multi_site_messages(ctx)
+        user = messages[1]["content"]
+        assert "Coordinated caller" in user
+        assert "a.py" in user

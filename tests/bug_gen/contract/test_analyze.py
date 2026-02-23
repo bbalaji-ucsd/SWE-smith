@@ -146,3 +146,141 @@ class TestBuildDependencyContexts:
             sample_file, min_callees=1, max_source_lines=1
         )
         assert len(contexts) == 0
+
+
+class TestIsTestFile:
+    def test_test_directory(self):
+        from swesmith.bug_gen.contract.analyze import _is_test_file
+        assert _is_test_file("tests/test_foo.py") is True
+        assert _is_test_file("test/test_bar.py") is True
+
+    def test_test_filename(self):
+        from swesmith.bug_gen.contract.analyze import _is_test_file
+        assert _is_test_file("src/test_utils.py") is True
+        assert _is_test_file("pkg/foo_test.py") is True
+
+    def test_source_file(self):
+        from swesmith.bug_gen.contract.analyze import _is_test_file
+        assert _is_test_file("src/utils.py") is False
+        assert _is_test_file("mypkg/core.py") is False
+        assert _is_test_file("mypkg/cli.py") is False
+
+
+class TestBuildMultiSiteContexts:
+    def test_finds_multi_site_candidates(self, tmp_path):
+        """Test that build_multi_site_contexts finds functions with 2+ cross-file callers."""
+        from swesmith.bug_gen.contract.analyze import build_multi_site_contexts
+
+        # Create a mini repo with a target and two callers in different files
+        pkg = tmp_path / "mypkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+
+        (pkg / "core.py").write_text(textwrap.dedent("""\
+            def encode(data):
+                result = str(data)
+                return result
+        """))
+
+        (pkg / "cli.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def run_cli():
+                return encode({"key": "value"})
+        """))
+
+        (pkg / "api.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def handle_request():
+                return encode([1, 2, 3])
+        """))
+
+        contexts = build_multi_site_contexts(str(tmp_path), min_cross_file_usages=2)
+        assert len(contexts) >= 1
+        ctx = contexts[0]
+        assert ctx.target.name == "encode"
+        assert ctx.coordinated_caller is not None
+        assert len(ctx.other_callers) >= 1
+
+    def test_skips_functions_with_too_few_callers(self, tmp_path):
+        """Functions with only 1 cross-file caller should be skipped."""
+        from swesmith.bug_gen.contract.analyze import build_multi_site_contexts
+
+        pkg = tmp_path / "mypkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+        (pkg / "core.py").write_text("def encode(data):\n    return str(data)\n")
+        (pkg / "cli.py").write_text("from mypkg.core import encode\n\ndef run():\n    encode(1)\n")
+
+        contexts = build_multi_site_contexts(str(tmp_path), min_cross_file_usages=2)
+        assert len(contexts) == 0
+
+    def test_excludes_test_files_as_coordinated_caller(self, tmp_path):
+        """Coordinated caller must NOT be a test file (eval harness restores test files)."""
+        from swesmith.bug_gen.contract.analyze import build_multi_site_contexts
+
+        # Create a repo where the only cross-file callers are test files
+        pkg = tmp_path / "mypkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+        (pkg / "core.py").write_text(textwrap.dedent("""\
+            def encode(data):
+                result = str(data)
+                return result
+        """))
+
+        tests_dir = tmp_path / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "__init__.py").write_text("")
+        (tests_dir / "test_core.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def test_encode_str():
+                assert encode("hello") == "hello"
+        """))
+        (tests_dir / "test_core2.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def test_encode_int():
+                assert encode(42) == "42"
+        """))
+
+        # Both callers are test files → no valid coordinated caller → no contexts
+        contexts = build_multi_site_contexts(str(tmp_path), min_cross_file_usages=2)
+        assert len(contexts) == 0
+
+    def test_prefers_source_file_as_coordinated_caller(self, tmp_path):
+        """When both source and test callers exist, source file should be coordinated."""
+        from swesmith.bug_gen.contract.analyze import build_multi_site_contexts, _is_test_file
+
+        pkg = tmp_path / "mypkg"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+        (pkg / "core.py").write_text(textwrap.dedent("""\
+            def encode(data):
+                result = str(data)
+                return result
+        """))
+        (pkg / "cli.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def run_cli():
+                return encode({"key": "value"})
+        """))
+
+        tests_dir = tmp_path / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "__init__.py").write_text("")
+        (tests_dir / "test_core.py").write_text(textwrap.dedent("""\
+            from mypkg.core import encode
+
+            def test_encode():
+                assert encode("x") == "x"
+        """))
+
+        contexts = build_multi_site_contexts(str(tmp_path), min_cross_file_usages=2)
+        assert len(contexts) >= 1
+        ctx = contexts[0]
+        # Coordinated caller should be the source file, not the test file
+        assert not _is_test_file(ctx.coordinated_caller.file_path)

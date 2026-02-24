@@ -74,23 +74,42 @@ echo 'ANTHROPIC_API_KEY=<your-key>' >> .env
 ## Prerequisites: Build Docker Environment
 
 Before generating bugs, you need a Docker image for the target repository.
+The build is a two-step process: first export the conda environment spec,
+then build the Docker image.
+
 For the MonkeyType example used in this submission:
 
 ```bash
-# Build the Docker environment
+# Step 1: Export conda environment (installs repo, runs smoke test)
 python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
     --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
     --extra-test-deps "pytest<8" \
-    --smoke-cmd "pytest tests/ -q --maxfail=1"
+    --smoke-cmd "pytest tests/ -q --maxfail=1" \
+    --force
+
+# Step 2: Build the Docker image from the exported environment
+python -m swesmith.build_repo.create_images \
+    -r MonkeyType \
+    --user bbalaji-ucsd \
+    -y --force
 
 # Verify the image was created
 docker images | grep MonkeyType
 ```
 
-This creates a Docker image `swesmith/Instagram__MonkeyType.70c3acf6:latest`
-with the repository installed and tests passing. The `--smoke-cmd` flag runs
-the test suite inside the container during build, so a successful build
-confirms the tests pass in the Docker environment.
+Step 1 clones the repository, installs it in a temporary conda environment,
+runs the test suite as a smoke test, and exports the environment spec to
+`logs/build_images/env/`. Step 2 reads that spec and builds a Docker image
+`swebench/swesmith.x86_64.instagram_1776_monkeytype.70c3acf6:latest`.
+
+To verify the tests pass inside the Docker container:
+
+```bash
+docker run --rm swebench/swesmith.x86_64.instagram_1776_monkeytype.70c3acf6 \
+    bash -c "source /opt/miniconda3/bin/activate testbed && cd /testbed && pytest tests/ -q"
+```
+
+This should show 371 passed.
 
 ## Replication Steps
 

@@ -9,6 +9,21 @@ Python library that collects runtime type information and generates type
 annotations. The codebase has 368 tests and 299 code entities across modules
 for encoding, stub generation, type analysis, tracing, and CLI tooling.
 
+## Summary
+
+| Category | Count | Avg F2P | Key challenge for agents |
+|---|---|---|---|
+| Contract Violation | 4 | 6.8 | Trace indirect failures to contract breach |
+| Refactoring Drift | 2 | 1.0 | Distinguish cosmetic from semantic changes |
+| Multi-Site | 4 | 22.2 | Fix coordinated changes across 2 files |
+
+The bugs span a range of difficulty. The easiest (`multi_site__lyvaed11`,
+44 tests broken) gives abundant signal. The hardest (`refactor_drift__teococyw`,
+1 test broken, 1-line diff) requires understanding Python truthiness
+semantics with almost no signal. The multi-site bugs are structurally the
+most complex — they require cross-module reasoning that single-file
+benchmarks don't test.
+
 ---
 
 ## Contract Violation Bugs
@@ -301,20 +316,3 @@ instead of positional unpacking). An agent must recognize that the "old"
 tuple interface is the correct one and revert both changes. This tests
 whether agents can identify the migration direction — which version of the
 API is canonical — when both versions look reasonable.
-
----
-
-## Summary
-
-| Category | Count | Avg F2P | Key challenge for agents |
-|---|---|---|---|
-| Contract Violation | 4 | 6.8 | Trace indirect failures to contract breach |
-| Refactoring Drift | 2 | 1.0 | Distinguish cosmetic from semantic changes |
-| Multi-Site | 4 | 22.2 | Fix coordinated changes across 2 files |
-
-The bugs span a range of difficulty. The easiest (`multi_site__lyvaed11`,
-44 tests broken) gives abundant signal. The hardest (`refactor_drift__teococyw`,
-1 test broken, 1-line diff) requires understanding Python truthiness
-semantics with almost no signal. The multi-site bugs are structurally the
-most complex — they require cross-module reasoning that single-file
-benchmarks don't test.

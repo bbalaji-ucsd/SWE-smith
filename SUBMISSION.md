@@ -4,7 +4,8 @@
 
 This submission adds a new bug generation method to SWE-smith: **contract-aware
 bug generation**. Instead of mutating a function in isolation, this method
-analyzes inter-function dependencies via AST call-graph analysis and asks an
+analyzes inter-function dependencies via Abstract Syntax Tree (AST)
+call-graph analysis and asks an
 LLM to introduce bugs that exploit the implicit contracts between components.
 
 The method has three strategy variants that build on each other:
@@ -70,12 +71,6 @@ Set your Anthropic API key in the `.env` file at the repository root:
 echo 'ANTHROPIC_API_KEY=<your-key>' >> .env
 ```
 
-Or export it directly:
-
-```bash
-export ANTHROPIC_API_KEY=<your-key>
-```
-
 ## Prerequisites: Build Docker Environment
 
 Before generating bugs, you need a Docker image for the target repository.
@@ -93,7 +88,9 @@ docker images | grep MonkeyType
 ```
 
 This creates a Docker image `swesmith/Instagram__MonkeyType.70c3acf6:latest`
-with the repository installed and tests passing.
+with the repository installed and tests passing. The `--smoke-cmd` flag runs
+the test suite inside the container during build, so a successful build
+confirms the tests pass in the Docker environment.
 
 ## Replication Steps
 
@@ -108,19 +105,19 @@ export repo=Instagram__MonkeyType.70c3acf6
 python -m swesmith.bug_gen.contract.generate $repo \
   --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --cross_file --strategy contract_violation \
-  --user <github_username>
+  --user bbalaji-ucsd
 
 # Refactoring Drift (cross-file mode)
 python -m swesmith.bug_gen.contract.generate $repo \
   --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --cross_file --strategy refactor_drift \
-  --user <github_username>
+  --user bbalaji-ucsd
 
 # Multi-Site (automatically cross-file)
 python -m swesmith.bug_gen.contract.generate $repo \
   --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --strategy multi_site \
-  --user <github_username>
+  --user bbalaji-ucsd
 ```
 
 ### Step 2: Collect patches
@@ -138,7 +135,7 @@ python -m swesmith.harness.valid logs/bug_gen/${repo}_all_patches.json
 ### Step 4: Gather valid instances
 
 ```bash
-python -m swesmith.harness.gather logs/run_validation/$repo --user <github_username>
+python -m swesmith.harness.gather logs/run_validation/$repo --user bbalaji-ucsd
 ```
 
 ### Step 5: Evaluate with gold patches
@@ -155,7 +152,7 @@ python -m swesmith.harness.eval \
 python -m swesmith.issue_gen.generate \
   -d logs/task_insts/${repo}.json \
   -c configs/issue_gen/ig_v2.yaml \
-  --user <github_username>
+  --user bbalaji-ucsd
 ```
 
 ## Generated Instances

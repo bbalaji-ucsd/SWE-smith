@@ -24,15 +24,16 @@ persistent failure mode even with frontier models [5]. The existing bug
 generation strategies in SWE-smith produce localized perturbations that don't
 exercise these cross-module reasoning capabilities [6].
 
-We introduce a contract-aware bug generation method with three strategy
-variants that target specific agent weaknesses identified in this research.
+We propose a contract-aware bug generation method with three strategy
+variants that build on each other, targeting specific agent weaknesses
+identified in this research.
 
 ## The Method: Contract-Aware Bug Generation
 
 The core idea: instead of mutating a function in isolation, analyze its
 inter-function dependencies (callers, callees, cross-file importers) via
-AST call-graph analysis, then ask an LLM to introduce bugs that exploit
-the implicit contracts between components.
+Abstract Syntax Tree (AST) call-graph analysis, then ask an LLM to
+introduce bugs that exploit the implicit contracts between components.
 
 This produces three strategy variants of increasing complexity:
 

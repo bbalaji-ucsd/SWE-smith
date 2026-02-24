@@ -37,7 +37,7 @@ all = [
     "modal",
     "openai",
     "pre-commit",
-    "pyarrow>=20.0.0",
+    "pyarrow==20.0.0",
     "pytest",
     "pytest-cov",
     "python-dotenv",

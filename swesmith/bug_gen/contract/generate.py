@@ -524,7 +524,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="anthropic/claude-3-5-sonnet-20241022",
+        default="anthropic/claude-sonnet-4-6",
         help="LiteLLM model identifier.",
     )
     parser.add_argument(

@@ -1,0 +1,18 @@
+{
+  "cost": 0.0036910500000000004,
+  "explanation": "The `pascal_case` function now returns a list of capitalized word segments instead of a joined string. The coordinated caller `get_typed_dict_class_name` is updated to join the list itself before formatting. The test in `test_util.py` still calls `pascal_case` and compares the result to a string with `==`, which will fail because the return type is now a list.\n\nTarget function:",
+  "output": "Explanation:\nThe `pascal_case` function now returns a list of capitalized word segments instead of a joined string. The coordinated caller `get_typed_dict_class_name` is updated to join the list itself before formatting. The test in `test_util.py` still calls `pascal_case` and compares the result to a string with `==`, which will fail because the return type is now a list.\n\nTarget function:\n```python\ndef pascal_case(s: str) -> str:\n    return [\n        a[0].upper() + a[1:] for a in re.split(\"([^a-zA-Z0-9])\", s) if a.isalnum()\n    ]\n```\n\nCoordinated caller:\n```python\ndef get_typed_dict_class_name(parameter_name: str) -> str:\n    \"\"\"Return the name for a TypedDict class generated for parameter `parameter_name`.\"\"\"\n    return f\"{''.join(pascal_case(parameter_name))}TypedDict__RENAME_ME__\"\n```",
+  "rewrite": "def pascal_case(s: str) -> str:\n    return [\n        a[0].upper() + a[1:] for a in re.split(\"([^a-zA-Z0-9])\", s) if a.isalnum()\n    ]",
+  "strategy": "multi_site",
+  "target_function": "pascal_case",
+  "coordinated_caller": {
+    "file": "monkeytype/stubs.py",
+    "function": "get_typed_dict_class_name"
+  },
+  "other_callers": [
+    {
+      "file": "tests/test_util.py",
+      "function": "test_pascal_case"
+    }
+  ]
+}

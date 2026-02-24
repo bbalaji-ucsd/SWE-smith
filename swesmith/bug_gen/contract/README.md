@@ -115,20 +115,20 @@ python -m swesmith.bug_gen.contract.generate $repo \
 
 # Contract violation — cross-file mode (recommended)
 python -m swesmith.bug_gen.contract.generate $repo \
-    --model bedrock/us.anthropic.claude-sonnet-4-6 \
+    --model anthropic/claude-sonnet-4-6 \
     --max_bugs 10 \
     --cross_file
 
 # Refactoring drift — cross-file mode (recommended)
 python -m swesmith.bug_gen.contract.generate $repo \
-    --model bedrock/us.anthropic.claude-sonnet-4-6 \
+    --model anthropic/claude-sonnet-4-6 \
     --max_bugs 10 \
     --cross_file \
     --strategy refactor_drift
 
 # Multi-site — automatically cross-file
 python -m swesmith.bug_gen.contract.generate $repo \
-    --model bedrock/us.anthropic.claude-sonnet-4-6 \
+    --model anthropic/claude-sonnet-4-6 \
     --max_bugs 5 \
     --strategy multi_site
 
@@ -141,7 +141,7 @@ python -m swesmith.bug_gen.collect_patches logs/bug_gen/$repo
 | Argument | Default | Description |
 |---|---|---|
 | `repo` | (required) | SWE-smith repository name |
-| `--model` | `anthropic/claude-3-5-sonnet-20241022` | LiteLLM model identifier |
+| `--model` | `anthropic/claude-sonnet-4-6` | LiteLLM model identifier |
 | `-n, --n_bugs` | `1` | Bugs to generate per function |
 | `-w, --n_workers` | `1` | Parallel workers |
 | `-m, --max_bugs` | `-1` (unlimited) | Maximum total bugs |

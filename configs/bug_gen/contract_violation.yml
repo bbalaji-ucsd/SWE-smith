@@ -3,7 +3,7 @@ description: >
   Generate bugs by analyzing inter-function dependencies and asking an LLM
   to introduce subtle contract violations between caller and callee.
   Use --cross_file for cross-module dependency analysis (recommended).
-model: anthropic/claude-3-5-sonnet-20241022
+model: anthropic/claude-sonnet-4-6
 n_bugs: 1
 max_bugs: 10
 min_callees: 1

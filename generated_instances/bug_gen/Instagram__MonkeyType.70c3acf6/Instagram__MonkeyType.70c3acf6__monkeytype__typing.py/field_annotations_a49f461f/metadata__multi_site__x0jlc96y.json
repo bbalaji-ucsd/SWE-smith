@@ -1,0 +1,18 @@
+{
+  "cost": 0.007281450000000001,
+  "explanation": "The contract change: `field_annotations` now returns a dict with keys `\"required\"` and `\"optional\"` instead of a tuple `(required_fields, optional_fields)`. The coordinated caller is updated to unpack from this dict. The other caller in `test_typing.py` still expects a tuple and does `== (required_fields, optional_fields)`, which will fail because it now gets a dict instead.\n\nTarget function:",
+  "output": "Explanation:\nThe contract change: `field_annotations` now returns a dict with keys `\"required\"` and `\"optional\"` instead of a tuple `(required_fields, optional_fields)`. The coordinated caller is updated to unpack from this dict. The other caller in `test_typing.py` still expects a tuple and does `== (required_fields, optional_fields)`, which will fail because it now gets a dict instead.\n\nTarget function:\n```python\ndef field_annotations(typed_dict) -> Tuple[Dict[str, type], Dict[str, type]]:\n    \"\"\"Return the required and optional fields in the TypedDict.\"\"\"\n    return {\n        \"required\": typed_dict.__annotations__[\"required_fields\"].__annotations__,\n        \"optional\": typed_dict.__annotations__[\"optional_fields\"].__annotations__,\n    }\n```\n\nCoordinated caller:\n```python\ndef rewrite_anonymous_TypedDict(self, typed_dict: type) -> ForwardRef:  # type: ignore[override]\n    class_name = get_typed_dict_class_name(self._class_name_hint)\n    annotations = field_annotations(typed_dict)\n    required_fields = annotations[\"required\"]\n    optional_fields = annotations[\"optional\"]\n    has_required_fields = len(required_fields) != 0\n    has_optional_fields = len(optional_fields) != 0\n    if not has_required_fields and not has_optional_fields:\n        raise Exception(\n            \"Expected empty TypedDicts to be shrunk as Dict[Any, Any]\"\n            \" but got an empty TypedDict anyway\"\n        )\n    elif has_required_fields and not has_optional_fields:\n        self._add_typed_dict_class_stub(required_fields, class_name)\n    elif not has_required_fields and has_optional_fields:\n        self._add_typed_dict_class_stub(optional_fields, class_name, total=False)\n    else:\n        self._add_typed_dict_class_stub(required_fields, class_name)\n        base_class_name = class_name\n        class_name = get_typed_dict_class_name(self._class_name_hint) + \"NonTotal\"\n        self._add_typed_dict_class_stub(\n            optional_fields, class_name, base_class_name, total=False\n        )\n    return make_forward_ref(class_name)\n```",
+  "rewrite": "def field_annotations(typed_dict) -> Tuple[Dict[str, type], Dict[str, type]]:\n    \"\"\"Return the required and optional fields in the TypedDict.\"\"\"\n    return {\n        \"required\": typed_dict.__annotations__[\"required_fields\"].__annotations__,\n        \"optional\": typed_dict.__annotations__[\"optional_fields\"].__annotations__,\n    }",
+  "strategy": "multi_site",
+  "target_function": "field_annotations",
+  "coordinated_caller": {
+    "file": "monkeytype/stubs.py",
+    "function": "rewrite_anonymous_TypedDict"
+  },
+  "other_callers": [
+    {
+      "file": "tests/test_typing.py",
+      "function": "test_field_annotations"
+    }
+  ]
+}

@@ -2,25 +2,39 @@
 
 ## The Gap We Target
 
-Recent research (2025–2026) reveals a consistent pattern: modern coding agents
-are strong at writing code but weak at doing engineering work. The tasks that
-remain disproportionately hard for agents are exactly the ones human engineers
-consider routine — debugging across modules, propagating changes through
-dependency chains, and reasoning about implicit contracts between components.
+Modern coding agents perform well on curated benchmarks but struggle with
+production-like tasks. On SWE-bench Verified, top agents report ~80% success,
+but OpenAI's February 2026 analysis found that 59.4% of remaining unsolved
+tasks are flawed and that frontier models show evidence of training data
+contamination [1], leading OpenAI and the original benchmark authors to
+recommend its retirement in favor of SWE-bench Pro. Anthropic's concurrent
+research demonstrated that infrastructure noise alone can swing benchmark
+scores by 6 percentage points [2]. On production-like benchmarks, performance
+drops significantly — on SWE-bench Pro, which tests longer-horizon tasks
+across larger codebases, baseline Sonnet 4.5 scored 43.6% without context
+augmentation [3].
 
-On curated benchmarks like SWE-bench Verified, top agents exceed 70–80%
-success. On production-like variants, success drops to 15–25%. The gap comes
-from problems that are conceptually simple but structurally open-ended:
-multi-file consistency, indirect failure signals, and long-horizon exploration.
+The gap stems from problems that are conceptually simple but structurally
+open-ended. OpenAI's own engineering team found that agents require extensive
+human-built scaffolding to reason across module boundaries, and that "the
+primary job of [the] engineering team became enabling the [agent]" to handle
+cross-file dependencies [4]. Practitioner retrospectives identify "context
+drift" — agents losing coherence across multi-step, multi-file tasks — as a
+persistent failure mode even with frontier models [5]. The existing bug
+generation strategies in SWE-smith produce localized perturbations that don't
+exercise these cross-module reasoning capabilities [6].
 
-The bugs in existing SWE-smith methods don't fully exercise these failure
-modes. Procedural mutations (swap operators, shuffle lines) are mechanical.
-Single-function LLM rewrites produce bugs that are localized and detectable
-by reading one function. Neither requires the cross-module reasoning that
-separates benchmark performance from real-world capability.
+We introduce a contract-aware bug generation method with three strategy
+variants that target specific agent weaknesses identified in this research.
 
-We introduce three bug generation strategies that target specific agent
-weaknesses identified in recent research.
+## The Method: Contract-Aware Bug Generation
+
+The core idea: instead of mutating a function in isolation, analyze its
+inter-function dependencies (callers, callees, cross-file importers) via
+AST call-graph analysis, then ask an LLM to introduce bugs that exploit
+the implicit contracts between components.
+
+This produces three strategy variants of increasing complexity:
 
 ## Strategy 1: Contract Violation
 
@@ -35,7 +49,7 @@ indirectly*. The failing test doesn't directly describe the bug — it exercises
 a caller that depends on a contract the target no longer honors. An agent must
 trace the failure backward through the call chain to find the root cause,
 which requires the kind of hypothesis testing that agents consistently
-struggle with.
+struggle with [5].
 
 The key design choice is showing the LLM the dependency context (callers,
 callees, cross-file importers) rather than the function in isolation. This
@@ -57,7 +71,7 @@ This is harder to detect than contract violation because the agent must
 distinguish between cosmetic changes (safe) and semantic changes (buggy)
 within a diff that looks uniformly like cleanup. Agents are known to struggle
 with abstraction-level reasoning — understanding *intent* behind code changes
-rather than just *syntax*.
+rather than just *syntax* [4][5].
 
 ## Strategy 3: Multi-Site
 
@@ -67,8 +81,8 @@ Other callers in different files are left un-updated. The bug is the mismatch
 between updated and un-updated call sites.
 
 **Why it matters.** This directly targets *multi-file consistency edits*,
-which research consistently identifies as a core agent failure mode. To fix
-a multi-site bug, an agent must:
+which research consistently identifies as a core agent failure mode [4][5].
+To fix a multi-site bug, an agent must:
 
 1. Identify that two files are wrong (not just one)
 2. Understand the contract between them
@@ -86,10 +100,9 @@ after applying the gold patch, so modifying test files as coordinated callers
 causes gold eval failures. We filter test files from the coordinated caller
 selection during static analysis.
 
-## Why These Methods Over Alternatives
+## Why This Method Over Alternatives
 
-We evaluated several candidate approaches before selecting these three. The
-key criteria were:
+The key criteria were:
 
 **Scalability.** The method must work on any Python repository with a Docker
 environment, without requiring PR history, issue databases, or manual
@@ -110,28 +123,20 @@ intent reasoning. Multi-site tests cross-module consistency.
 Several approaches sound appealing in the abstract but don't work within
 SWE-smith's architecture:
 
-**Performance regression.** SWE-smith's validation harness runs tests and
-checks pass/fail. There's no infrastructure for runtime thresholds, and most
-repos don't have performance benchmarks in their test suites. This would
-require a completely different validation pipeline.
+- **Performance regression.** SWE-smith's validation harness checks pass/fail.
+  There's no infrastructure for runtime thresholds, and most repos don't have
+  performance benchmarks in their test suites.
 
-**Concurrency bugs.** Nondeterministic failures can't be reliably validated
-with a deterministic test harness. You'd need probabilistic validation (run
-N times, check failure rate), which is a fundamental architecture change.
+- **Concurrency bugs.** Nondeterministic failures can't be reliably validated
+  with a deterministic test harness.
 
-**Dependency/environment perturbation.** SWE-smith builds Docker images with
-pinned environments. Changing dependencies means rebuilding the image, which
-is expensive and fragile. The bug also wouldn't be in the code — it'd be in
-the environment — so there's no code patch to learn from.
+- **Dependency/environment perturbation.** SWE-smith builds Docker images with
+  pinned environments. Changing dependencies means rebuilding the image, and
+  the bug wouldn't be in the code — so there's no code patch to learn from.
 
-**Specification reinterpretation.** "Change requirements, not code" sounds
-elegant but the agent needs to produce a code patch. If the code isn't wrong,
-what's the training signal? You'd need to modify tests and code, which makes
-the task definition circular.
-
-**Test-coverage exploitation.** Generating bugs that pass tests but violate
-spec is the opposite of what SWE-smith needs. The whole pipeline depends on
-test failures to validate bugs.
+- **Test-coverage exploitation.** Generating bugs that pass tests but violate
+  spec is the opposite of what SWE-smith needs. The whole pipeline depends on
+  test failures to validate bugs.
 
 ## Results Summary
 
@@ -148,24 +153,22 @@ Multi-site bugs break significantly more tests on average (22.2 vs 6.8 and
 lower validation rate but produces the most deceptive bugs — minimal diffs
 with minimal test signal.
 
-## Next Steps
+## References
 
-**Partial migration.** Pick a pattern used throughout the codebase (e.g., a
-utility function, a class interface, a naming convention). Ask the LLM to
-"migrate" some call sites to a new pattern but leave others unchanged. The
-inconsistency breaks tests. This is a natural extension of multi-site: the
-cross-file analysis already identifies pattern usage sites, the diff is
-multi-file (harder to fix), and the fix requires understanding the migration
-direction and completing it. Where multi-site coordinates one target and one
-caller, partial migration would coordinate a pattern change across N call
-sites with K left un-updated — producing bugs with tunable difficulty.
+[1] OpenAI, "SWE-bench Verified Retirement Analysis," Feb 2026.
+    https://the-decoder.com/openai-wants-to-retire-the-ai-coding-benchmark-that-everyone-has-been-competing-on/
 
-**Adversarial difficulty calibration.** Use an agent-in-the-loop to filter
-generated bugs: run a baseline agent on each candidate and only keep bugs
-the agent fails to solve. This would produce a benchmark that specifically
-targets current agent weaknesses rather than sampling uniformly.
+[2] Anthropic, "Quantifying Infrastructure Noise in Agentic Coding Evals," Feb 2026.
+    https://www.anthropic.com/engineering/infrastructure-noise
 
-**Cross-language generalization.** The static analysis (AST call graph,
-import resolution) is Python-specific, but the prompting strategy is
-language-agnostic. Extending to TypeScript or Java would test whether the
-approach generalizes.
+[3] Bito, "AI Architect Achieves 60.8% on SWE-Bench Pro," Feb 2026.
+    https://www.prnewswire.com/news-releases/bitos-ai-architect-achieves-highest-success-rate-of-60-8-on-swe-bench-pro-302676926.html
+
+[4] OpenAI, "Harness Engineering: Leveraging Codex in an Agent-First World," Feb 2026.
+    https://openai.com/index/harness-engineering/
+
+[5] D. Crawshaw, "Eight More Months of Agents," Feb 2026.
+    https://crawshaw.io/blog/eight-more-months-of-agents
+
+[6] J. Yang et al., "SWE-smith: Scaling Data for Software Engineering Agents," NeurIPS 2025.
+    https://arxiv.org/abs/2504.21798

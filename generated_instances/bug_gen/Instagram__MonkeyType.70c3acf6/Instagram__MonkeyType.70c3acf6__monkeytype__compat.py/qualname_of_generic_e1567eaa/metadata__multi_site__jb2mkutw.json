@@ -1,0 +1,18 @@
+{
+  "cost": 0.007895250000000001,
+  "explanation": "The contract change: `qualname_of_generic` now returns a tuple `(str, str)` where the first element is the qualname and the second is the module override (or empty string). The coordinated caller `type_to_dict` is updated to unpack the tuple. The other caller in `stubs.py` still expects a plain string from `qualname_of_generic`, so calling `.add(qualname_of_generic(anno))` or `_get_import_for_qualname(qualname_of_generic(anno))` will break because it receives a tuple instead of a string.\n\nTarget function:",
+  "output": "Explanation:\nThe contract change: `qualname_of_generic` now returns a tuple `(str, str)` where the first element is the qualname and the second is the module override (or empty string). The coordinated caller `type_to_dict` is updated to unpack the tuple. The other caller in `stubs.py` still expects a plain string from `qualname_of_generic`, so calling `.add(qualname_of_generic(anno))` or `_get_import_for_qualname(qualname_of_generic(anno))` will break because it receives a tuple instead of a string.\n\nTarget function:\n```python\ndef qualname_of_generic(typ: Any) -> tuple:\n    name = str(\n        getattr(typ, \"_name\", None)\n        or getattr(typ.__origin__, \"_name\", None)\n        or typ.__origin__.__qualname__\n    )\n    module_override = getattr(typ, \"__module__\", \"\") or \"\"\n    return (name, module_override)\n```\n\nCoordinated caller:\n```python\ndef type_to_dict(typ: type) -> TypeDict:\n    \"\"\"Convert a type into a dictionary representation that we can store.\n\n    The dictionary must:\n        1. Be encodable as JSON\n        2. Contain enough information to let us reify the type\n    \"\"\"\n    if is_typed_dict(typ):\n        return typed_dict_to_dict(typ)\n\n    # Union and Any are special cases that aren't actually types.\n    if is_union(typ):\n        qualname = \"Union\"\n    elif is_any(typ):\n        qualname = \"Any\"\n    elif is_generic(typ):\n        qualname, _ = qualname_of_generic(typ)\n    else:\n        qualname = typ.__qualname__\n    d: TypeDict = {\n        \"module\": typ.__module__,\n        \"qualname\": qualname,\n    }\n    elem_types = getattr(typ, \"__args__\", None)\n    # In Python < 3.9, bare generics still have args\n    is_bare_generic = typ in {Dict, List, Tuple}\n    if not is_bare_generic and elem_types is not None and is_generic(typ):\n        # empty typing.Tuple is weird; the spec says it should be Tuple[()],\n        # which results in __args__ of `((),)` pre-Python 3.11\n        if elem_types == ((),):\n            elem_types = ()\n        d[\"elem_types\"] = [type_to_dict(t) for t in elem_types]\n    return d\n```",
+  "rewrite": "def qualname_of_generic(typ: Any) -> tuple:\n    name = str(\n        getattr(typ, \"_name\", None)\n        or getattr(typ.__origin__, \"_name\", None)\n        or typ.__origin__.__qualname__\n    )\n    module_override = getattr(typ, \"__module__\", \"\") or \"\"\n    return (name, module_override)",
+  "strategy": "multi_site",
+  "target_function": "qualname_of_generic",
+  "coordinated_caller": {
+    "file": "monkeytype/encoding.py",
+    "function": "type_to_dict"
+  },
+  "other_callers": [
+    {
+      "file": "monkeytype/stubs.py",
+      "function": "get_imports_for_annotation"
+    }
+  ]
+}

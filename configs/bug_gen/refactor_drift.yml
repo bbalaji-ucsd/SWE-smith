@@ -4,7 +4,7 @@ description: >
   code-quality improvement. The bug is a subtle behavioral drift hidden
   inside what looks like a legitimate cleanup. Use --cross_file for
   cross-module dependency analysis (recommended).
-model: anthropic/claude-3-5-sonnet-20241022
+model: anthropic/claude-sonnet-4-6
 strategy: refactor_drift
 n_bugs: 1
 max_bugs: 10

@@ -1,0 +1,34 @@
+{
+  "cost": 0.00884565,
+  "explanation": "The contract change: `get_name_in_module` now returns a tuple `(obj, module_name)` instead of just `obj`. The coordinated caller `get_monkeytype_config` is updated to unpack the tuple. All other callers still expect just the object to be returned directly, so they will break \u2014 for example, `type_from_dict` will try to use the tuple as a type, `from_callable` will do isinstance checks on a tuple, and the tests will fail because they compare the result directly to the expected object or expect `NameLookupError` to be raised (but instead get a tuple that doesn't match).\n\nTarget function:",
+  "output": "Explanation:\nThe contract change: `get_name_in_module` now returns a tuple `(obj, module_name)` instead of just `obj`. The coordinated caller `get_monkeytype_config` is updated to unpack the tuple. All other callers still expect just the object to be returned directly, so they will break \u2014 for example, `type_from_dict` will try to use the tuple as a type, `from_callable` will do isinstance checks on a tuple, and the tests will fail because they compare the result directly to the expected object or expect `NameLookupError` to be raised (but instead get a tuple that doesn't match).\n\nTarget function:\n```python\ndef get_name_in_module(\n    module: str,\n    qualname: str,\n    attr_getter: Optional[Callable[[Any, str], Any]] = None,\n) -> Any:\n    \"\"\"Return the python object specified by qualname in module.\n\n    Raises:\n        NameLookupError if the module/qualname cannot be retrieved.\n    \"\"\"\n    if attr_getter is None:\n        attr_getter = getattr\n    try:\n        obj = importlib.import_module(module)\n    except ModuleNotFoundError:\n        raise NameLookupError(\"No module named '%s'\" % (module,))\n    walked = []\n    for part in qualname.split(\".\"):\n        walked.append(part)\n        try:\n            obj = attr_getter(obj, part)\n        except AttributeError:\n            raise NameLookupError(\n                \"Module '%s' has no attribute '%s'\" % (module, \".\".join(walked))\n            )\n    return (obj, module)\n```\n\nCoordinated caller:\n```python\ndef get_monkeytype_config(path: str) -> Config:\n    \"\"\"Imports the config instance specified by path.\n\n    Path should be in the form module:qualname. Optionally, path may end with (),\n    in which case we will call/instantiate the given class/function.\n    \"\"\"\n    should_call = False\n    if path.endswith(\"()\"):\n        should_call = True\n        path = path[:-2]\n    module, qualname = module_path_with_qualname(path)\n    try:\n        config, _ = get_name_in_module(module, qualname)\n    except MonkeyTypeError as mte:\n        raise argparse.ArgumentTypeError(f\"cannot import {path}: {mte}\")\n    if should_call:\n        config = config()\n    return config  # type: ignore[no-any-return]\n```",
+  "rewrite": "def get_name_in_module(\n    module: str,\n    qualname: str,\n    attr_getter: Optional[Callable[[Any, str], Any]] = None,\n) -> Any:\n    \"\"\"Return the python object specified by qualname in module.\n\n    Raises:\n        NameLookupError if the module/qualname cannot be retrieved.\n    \"\"\"\n    if attr_getter is None:\n        attr_getter = getattr\n    try:\n        obj = importlib.import_module(module)\n    except ModuleNotFoundError:\n        raise NameLookupError(\"No module named '%s'\" % (module,))\n    walked = []\n    for part in qualname.split(\".\"):\n        walked.append(part)\n        try:\n            obj = attr_getter(obj, part)\n        except AttributeError:\n            raise NameLookupError(\n                \"Module '%s' has no attribute '%s'\" % (module, \".\".join(walked))\n            )\n    return (obj, module)",
+  "strategy": "multi_site",
+  "target_function": "get_name_in_module",
+  "coordinated_caller": {
+    "file": "monkeytype/cli.py",
+    "function": "get_monkeytype_config"
+  },
+  "other_callers": [
+    {
+      "file": "monkeytype/encoding.py",
+      "function": "type_from_dict"
+    },
+    {
+      "file": "monkeytype/stubs.py",
+      "function": "from_callable"
+    },
+    {
+      "file": "tests/test_util.py",
+      "function": "test_get_existing_name"
+    },
+    {
+      "file": "tests/test_util.py",
+      "function": "test_get_nonexistent_module"
+    },
+    {
+      "file": "tests/test_util.py",
+      "function": "test_get_nonexistent_qualname"
+    }
+  ]
+}

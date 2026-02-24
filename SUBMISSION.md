@@ -1,33 +1,58 @@
-# SWE-smith: Contract-Violation, Refactoring-Drift & Multi-Site Bug Generation
+# SWE-smith: Contract-Aware Bug Generation
 
 ## Overview
 
-This submission adds three new bug generation strategies to SWE-smith that produce harder, more realistic bugs by analyzing inter-function dependencies:
+This submission adds a new bug generation method to SWE-smith: **contract-aware
+bug generation**. Instead of mutating a function in isolation, this method
+analyzes inter-function dependencies via AST call-graph analysis and asks an
+LLM to introduce bugs that exploit the implicit contracts between components.
 
-1. **Contract Violation** (`--strategy contract_violation`): Rewrites a function with a bug that violates the implicit contract between caller and callee.
-2. **Refactoring Drift** (`--strategy refactor_drift`): Refactors a function as a plausible code-quality improvement, where the bug is a subtle behavioral drift hidden inside what looks like a legitimate cleanup.
-3. **Multi-Site** (`--strategy multi_site`): Simulates a partial API migration — rewrites both a target function AND one cross-file caller with a new contract, leaving other callers un-updated. Produces multi-file bugs.
+The method has three strategy variants that build on each other:
 
-All strategies support single-file and cross-file (`--cross_file`) dependency analysis. Multi-site automatically uses cross-file analysis.
+1. **Contract Violation** (`--strategy contract_violation`): Rewrites a function
+   with a bug that violates the implicit contract between caller and callee.
+2. **Refactoring Drift** (`--strategy refactor_drift`): Refactors a function as
+   a plausible code-quality improvement, hiding a subtle behavioral drift inside
+   what looks like a legitimate cleanup.
+3. **Multi-Site** (`--strategy multi_site`): Simulates a partial API migration —
+   rewrites both a target function AND one cross-file caller with a new contract,
+   leaving other callers un-updated. Produces multi-file bugs.
 
-For a detailed discussion of the research motivation, design decisions, and rejected alternatives, see [METHODOLOGY.md](METHODOLOGY.md).
+All strategies support single-file and cross-file (`--cross_file`) dependency
+analysis. Multi-site automatically uses cross-file analysis.
 
-For a per-bug walkthrough of all 10 generated instances with analysis of what makes each one interesting for agent evaluation, see [BUG_REPORT.md](BUG_REPORT.md).
+For a detailed discussion of the research motivation, design decisions, and
+rejected alternatives, see [METHODOLOGY.md](METHODOLOGY.md).
+
+For a per-bug walkthrough of all 10 generated instances with analysis of what
+makes each one interesting for agent evaluation, see [BUG_REPORT.md](BUG_REPORT.md).
 
 ## Research Motivation
 
-Existing SWE-smith methods generate single-function, single-file bugs. Real-world bugs often involve **cross-module contract violations** — a function's behavior changes and some callers are updated but others are not. This is especially common during refactoring, API evolution, and partial migrations.
+Modern coding agents perform well on curated benchmarks but struggle with
+production-like tasks. OpenAI's February 2026 analysis found that 59.4% of
+remaining unsolved SWE-bench Verified tasks are flawed, with evidence of
+training data contamination across frontier models
+([source](https://the-decoder.com/openai-wants-to-retire-the-ai-coding-benchmark-that-everyone-has-been-competing-on/)).
+On production-like benchmarks like SWE-bench Pro, baseline Sonnet 4.5 scored
+43.6% without context augmentation
+([source](https://www.prnewswire.com/news-releases/bitos-ai-architect-achieves-highest-success-rate-of-60-8-on-swe-bench-pro-302676926.html)).
 
-**Multi-site** produces **coordinated multi-file bugs**, which are harder for LLM agents because:
-- The agent must identify that TWO files are wrong (not just one)
-- The coordinated caller's change looks intentional, making it harder to detect
-- Fixing requires understanding the contract between modules, not just local code
+The gap stems from problems that are structurally open-ended. OpenAI's
+engineering team found that agents require extensive human-built scaffolding
+to reason across module boundaries
+([source](https://openai.com/index/harness-engineering/)).
+Practitioner retrospectives identify "context drift" — agents losing coherence
+across multi-step, multi-file tasks — as a persistent failure mode
+([source](https://crawshaw.io/blog/eight-more-months-of-agents)).
 
-Multi-site bugs test whether coding agents can reason about **cross-module dependencies** — a capability that single-file benchmarks don't evaluate well.
+Existing SWE-smith methods produce localized, single-function perturbations
+that don't exercise cross-module reasoning. Contract-aware bug generation
+fills this gap by producing bugs that require tracing indirect failures
+(contract violation), distinguishing cosmetic from semantic changes
+(refactoring drift), and reasoning about cross-file dependencies (multi-site).
 
 ## Installation
-
-No additional dependencies beyond the standard SWE-smith setup:
 
 ```bash
 git clone <this-repo>
@@ -37,20 +62,40 @@ conda activate swesmith
 pip install -e ".[all]"
 ```
 
-## Prerequisites
+### API Key Setup
 
-Before generating bugs, you need a Docker environment for the target repository. Follow the [Environment Construction guide](docs/guides/env_construction_py.md) or use an existing image.
+Set your Anthropic API key in the `.env` file at the repository root:
 
+```bash
+echo 'ANTHROPIC_API_KEY=<your-key>' >> .env
+```
+
+Or export it directly:
+
+```bash
+export ANTHROPIC_API_KEY=<your-key>
+```
+
+## Prerequisites: Build Docker Environment
+
+Before generating bugs, you need a Docker image for the target repository.
 For the MonkeyType example used in this submission:
 
 ```bash
-# The Docker image should already exist: swesmith/Instagram__MonkeyType.70c3acf6:latest
+# Build the Docker environment
+python -m swesmith.build_repo.try_install_py Instagram/MonkeyType configs/install_repo.sh \
+    --commit 70c3acf62950be5dfb28743c7a719bfdecebcd84 \
+    --extra-test-deps "pytest<8" \
+    --smoke-cmd "pytest tests/ -q --maxfail=1"
+
+# Verify the image was created
 docker images | grep MonkeyType
 ```
 
-## Replication Steps
+This creates a Docker image `swesmith/Instagram__MonkeyType.70c3acf6:latest`
+with the repository installed and tests passing.
 
-Replace `$repo` with `Instagram__MonkeyType.70c3acf6` (or any repo with a built Docker image).
+## Replication Steps
 
 ```bash
 export repo=Instagram__MonkeyType.70c3acf6
@@ -61,19 +106,19 @@ export repo=Instagram__MonkeyType.70c3acf6
 ```bash
 # Contract Violation (cross-file mode)
 python -m swesmith.bug_gen.contract.generate $repo \
-  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --cross_file --strategy contract_violation \
   --user <github_username>
 
 # Refactoring Drift (cross-file mode)
 python -m swesmith.bug_gen.contract.generate $repo \
-  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --cross_file --strategy refactor_drift \
   --user <github_username>
 
 # Multi-Site (automatically cross-file)
 python -m swesmith.bug_gen.contract.generate $repo \
-  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --model anthropic/claude-sonnet-4-6 \
   --max_bugs 5 --strategy multi_site \
   --user <github_username>
 ```
@@ -109,21 +154,25 @@ python -m swesmith.harness.eval \
 ```bash
 python -m swesmith.issue_gen.generate \
   -d logs/task_insts/${repo}.json \
-  -c configs/issue_gen/ig_v2_bedrock.yaml \
+  -c configs/issue_gen/ig_v2.yaml \
   --user <github_username>
 ```
 
 ## Generated Instances
 
-All generated artifacts are in the `logs/` directory:
+Pre-generated artifacts from our run are in
+[`generated_instances/`](generated_instances/):
 
 | Directory | Contents |
 |---|---|
-| `logs/bug_gen/` | Raw bug diffs and metadata |
-| `logs/run_validation/` | Validation results (per-instance reports) |
-| `logs/run_evaluation/` | Gold-patch evaluation results |
-| `logs/task_insts/` | Final task instances in SWE-bench format |
-| `logs/issue_gen/` | Generated issue descriptions |
+| [`generated_instances/bug_gen/`](generated_instances/bug_gen/) | Raw bug diffs and metadata |
+| [`generated_instances/run_validation/`](generated_instances/run_validation/) | Validation results (per-instance pass/fail reports) |
+| [`generated_instances/run_evaluation/`](generated_instances/run_evaluation/) | Gold-patch evaluation results |
+| [`generated_instances/task_insts/`](generated_instances/task_insts/) | Final task instances in SWE-bench format |
+| [`generated_instances/issue_gen/`](generated_instances/issue_gen/) | Generated issue descriptions |
+
+When you run the replication steps above, the code writes output to `logs/`
+(the default output directory).
 
 ### Summary of results
 
@@ -170,20 +219,20 @@ Multi-Site:
 ## Implementation Files
 
 Core implementation:
-- `swesmith/bug_gen/contract/analyze.py` — Static analysis: AST call graph, cross-file import resolution, multi-site context building
-- `swesmith/bug_gen/contract/generate.py` — Generation pipeline with `--strategy` flag
-- `swesmith/bug_gen/contract/prompts.py` — System prompts for all three strategies
-- `swesmith/bug_gen/contract/README.md` — Detailed documentation
+- [`swesmith/bug_gen/contract/analyze.py`](swesmith/bug_gen/contract/analyze.py) — Static analysis: AST call graph, cross-file import resolution, multi-site context building
+- [`swesmith/bug_gen/contract/generate.py`](swesmith/bug_gen/contract/generate.py) — Generation pipeline with `--strategy` flag
+- [`swesmith/bug_gen/contract/prompts.py`](swesmith/bug_gen/contract/prompts.py) — System prompts for all three strategies
+- [`swesmith/bug_gen/contract/README.md`](swesmith/bug_gen/contract/README.md) — Detailed documentation
 
 Configuration:
-- `configs/bug_gen/contract_violation.yml`
-- `configs/bug_gen/refactor_drift.yml`
-- `configs/bug_gen/multi_site.yml`
+- [`configs/bug_gen/contract_violation.yml`](configs/bug_gen/contract_violation.yml)
+- [`configs/bug_gen/refactor_drift.yml`](configs/bug_gen/refactor_drift.yml)
+- [`configs/bug_gen/multi_site.yml`](configs/bug_gen/multi_site.yml)
 
 Tests:
-- `tests/bug_gen/contract/test_analyze.py`
-- `tests/bug_gen/contract/test_generate.py`
-- `tests/bug_gen/contract/test_prompts.py`
+- [`tests/bug_gen/contract/test_analyze.py`](tests/bug_gen/contract/test_analyze.py)
+- [`tests/bug_gen/contract/test_generate.py`](tests/bug_gen/contract/test_generate.py)
+- [`tests/bug_gen/contract/test_prompts.py`](tests/bug_gen/contract/test_prompts.py)
 
 ## Running Tests
 

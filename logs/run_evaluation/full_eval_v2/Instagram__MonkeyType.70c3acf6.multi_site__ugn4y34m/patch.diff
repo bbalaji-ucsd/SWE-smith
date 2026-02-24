@@ -1,0 +1,26 @@
+diff --git a/monkeytype/stubs.py b/monkeytype/stubs.py
+index 9c1d3eb..f941de8 100644
+--- a/monkeytype/stubs.py
++++ b/monkeytype/stubs.py
+@@ -246,7 +246,7 @@ def shrink_traced_types(
+ 
+ def get_typed_dict_class_name(parameter_name: str) -> str:
+     """Return the name for a TypedDict class generated for parameter `parameter_name`."""
+-    return f"{pascal_case(parameter_name)}TypedDict__RENAME_ME__"
++    return f"{''.join(pascal_case(parameter_name))}TypedDict__RENAME_ME__"
+ 
+ 
+ class Stub(metaclass=ABCMeta):
+diff --git a/monkeytype/util.py b/monkeytype/util.py
+index a7b27c4..0e5b56f 100644
+--- a/monkeytype/util.py
++++ b/monkeytype/util.py
+@@ -77,6 +77,6 @@ def get_name_in_module(
+ 
+ 
+ def pascal_case(s: str) -> str:
+-    return "".join(
++    return [
+         a[0].upper() + a[1:] for a in re.split("([^a-zA-Z0-9])", s) if a.isalnum()
+-    )
++    ]

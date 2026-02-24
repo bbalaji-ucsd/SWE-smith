@@ -1,0 +1,34 @@
+diff --git a/monkeytype/compat.py b/monkeytype/compat.py
+index 06d8d76..9621d98 100644
+--- a/monkeytype/compat.py
++++ b/monkeytype/compat.py
+@@ -50,12 +50,14 @@ def is_generic_of(typ: Any, gen: Any) -> bool:
+     return is_generic(typ) and typ.__origin__ is gen.__origin__
+ 
+ 
+-def qualname_of_generic(typ: Any) -> str:
+-    return str(
++def qualname_of_generic(typ: Any) -> tuple:
++    name = str(
+         getattr(typ, "_name", None)
+         or getattr(typ.__origin__, "_name", None)
+         or typ.__origin__.__qualname__
+     )
++    module_override = getattr(typ, "__module__", "") or ""
++    return (name, module_override)
+ 
+ 
+ def name_of_generic(typ: Any) -> str:
+diff --git a/monkeytype/encoding.py b/monkeytype/encoding.py
+index ef789b0..f57ff29 100644
+--- a/monkeytype/encoding.py
++++ b/monkeytype/encoding.py
+@@ -65,7 +65,7 @@ def type_to_dict(typ: type) -> TypeDict:
+     elif is_any(typ):
+         qualname = "Any"
+     elif is_generic(typ):
+-        qualname = qualname_of_generic(typ)
++        qualname, _ = qualname_of_generic(typ)
+     else:
+         qualname = typ.__qualname__
+     d: TypeDict = {

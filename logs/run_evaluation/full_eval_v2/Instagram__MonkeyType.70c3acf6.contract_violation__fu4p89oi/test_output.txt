@@ -1,0 +1,523 @@
++ cd /testbed
++ : '>>>>> Start Test Output'
++ source /opt/miniconda3/bin/activate
+++ _CONDA_ROOT=/opt/miniconda3
+++ . /opt/miniconda3/etc/profile.d/conda.sh
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ '[' -z '' ']'
++++ export CONDA_SHLVL=0
++++ CONDA_SHLVL=0
++++ '[' -n '' ']'
++++++ dirname /opt/miniconda3/bin/conda
+++++ dirname /opt/miniconda3/bin
++++ PATH=/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ export PATH
++++ '[' -z '' ']'
++++ PS1=
+++ conda activate
+++ local cmd=activate
+++ case "$cmd" in
+++ __conda_activate activate
+++ '[' -n '' ']'
+++ local ask_conda
++++ PS1=
++++ __conda_exe shell.posix activate
++++ /opt/miniconda3/bin/conda shell.posix activate
+++ ask_conda='PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ eval 'PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++++ PS1='(base) '
++++ export PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ export CONDA_PREFIX=/opt/miniconda3
++++ CONDA_PREFIX=/opt/miniconda3
++++ export CONDA_SHLVL=1
++++ CONDA_SHLVL=1
++++ export CONDA_DEFAULT_ENV=base
++++ CONDA_DEFAULT_ENV=base
++++ export 'CONDA_PROMPT_MODIFIER=(base) '
++++ CONDA_PROMPT_MODIFIER='(base) '
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ __conda_hashr
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ hash -r
++ conda activate testbed
++ local cmd=activate
++ case "$cmd" in
++ __conda_activate activate testbed
++ '[' -n '' ']'
++ local ask_conda
+++ PS1='(base) '
+++ __conda_exe shell.posix activate testbed
+++ /opt/miniconda3/bin/conda shell.posix activate testbed
++ ask_conda='PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_1='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++ eval 'PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_1='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ PS1='(testbed) '
+++ export PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ export CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ export CONDA_SHLVL=2
+++ CONDA_SHLVL=2
+++ export CONDA_DEFAULT_ENV=testbed
+++ CONDA_DEFAULT_ENV=testbed
+++ export 'CONDA_PROMPT_MODIFIER=(testbed) '
+++ CONDA_PROMPT_MODIFIER='(testbed) '
+++ export CONDA_PREFIX_1=/opt/miniconda3
+++ CONDA_PREFIX_1=/opt/miniconda3
+++ export CONDA_EXE=/opt/miniconda3/bin/conda
+++ CONDA_EXE=/opt/miniconda3/bin/conda
+++ export _CE_M=
+++ _CE_M=
+++ export _CE_CONDA=
+++ _CE_CONDA=
+++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++ __conda_hashr
++ '[' -n '' ']'
++ '[' -n '' ']'
++ hash -r
++ pytest tests/ demo/ --deselect demo/test_inbox.py::test_everything --disable-warnings --color=no --tb=no --verbose
+============================= test session starts ==============================
+platform linux -- Python 3.10.19, pytest-7.4.4, pluggy-1.6.0 -- /opt/miniconda3/envs/testbed/bin/python
+cachedir: .pytest_cache
+rootdir: /testbed
+configfile: setup.cfg
+collecting ... collected 382 items / 1 deselected / 381 selected
+
+tests/test_cli.py::test_generate_stub PASSED                             [  0%]
+tests/test_cli.py::test_print_stub_ignore_existing_annotations PASSED    [  0%]
+tests/test_cli.py::test_get_diff PASSED                                  [  0%]
+tests/test_cli.py::test_get_diff2 PASSED                                 [  1%]
+tests/test_cli.py::test_no_traces[tests.test_cli-No traces found for module tests.test_cli\n] PASSED [  1%]
+tests/test_cli.py::test_no_traces[tests.test_cli:foo-No traces found for specifier tests.test_cli:foo\n] PASSED [  1%]
+tests/test_cli.py::test_display_list_of_modules PASSED                   [  1%]
+tests/test_cli.py::test_display_list_of_modules_no_modules PASSED        [  2%]
+tests/test_cli.py::test_display_sample_count PASSED                      [  2%]
+tests/test_cli.py::test_display_sample_count_from_cli PASSED             [  2%]
+tests/test_cli.py::test_quiet_failed_traces PASSED                       [  2%]
+tests/test_cli.py::test_verbose_failed_traces PASSED                     [  3%]
+tests/test_cli.py::test_cli_context_manager_activated PASSED             [  3%]
+tests/test_cli.py::test_pathlike_parameter PASSED                        [  3%]
+tests/test_cli.py::test_toplevel_filename_parameter PASSED               [  3%]
+tests/test_cli.py::test_apply_stub_init PASSED                           [  4%]
+tests/test_cli.py::test_apply_stub_file_with_spaces PASSED               [  4%]
+tests/test_cli.py::test_apply_stub_using_libcst PASSED                   [  4%]
+tests/test_cli.py::test_apply_stub_using_libcst__exception PASSED        [  4%]
+tests/test_cli.py::test_apply_stub_using_libcst__overwrite_existing_annotations PASSED [  5%]
+tests/test_cli.py::test_apply_stub_using_libcst__confine_new_imports_in_type_checking_block PASSED [  5%]
+tests/test_cli.py::test_get_newly_imported_items PASSED                  [  5%]
+tests/test_compat.py::test_name_of_union PASSED                          [  6%]
+tests/test_config.py::TestDefaultCodeFilter::test_excludes_stdlib PASSED [  6%]
+tests/test_config.py::TestDefaultCodeFilter::test_excludes_site_packages PASSED [  6%]
+tests/test_config.py::TestDefaultCodeFilter::test_includes_otherwise PASSED [  6%]
+tests/test_config.py::TestDefaultCodeFilter::test_excludes_frozen_importlib PASSED [  7%]
+tests/test_config.py::TestDefaultCodeFilter::test_includes_stdlib_in_MONKEYTYPE_TRACE_MODULES PASSED [  7%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[NoneType] PASSED [  7%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[NotImplementedType] PASSED [  7%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[mappingproxy] PASSED [  8%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[int] PASSED [  8%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Outer] PASSED [  8%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Inner] PASSED [  8%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Any] PASSED [  9%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Dict0] PASSED [  9%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Dict1] PASSED [  9%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Dict2] PASSED [  9%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[List0] PASSED [ 10%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[List1] PASSED [ 10%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Optional] PASSED [ 10%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Set] PASSED [ 11%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Tuple0] PASSED [ 11%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Tuple1] PASSED [ 11%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Tuple2] PASSED [ 11%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Type] PASSED [ 12%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Union] PASSED [ 12%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Dict3] PASSED [ 12%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[List2] PASSED [ 12%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip[Dict4] PASSED [ 13%]
+tests/test_encoding.py::TestTypeConversion::test_type_to_dict[Dict-expected0] PASSED [ 13%]
+tests/test_encoding.py::TestTypeConversion::test_type_to_dict[DUMMY_NAME-expected1] PASSED [ 13%]
+tests/test_encoding.py::TestTypeConversion::test_type_to_dict[DUMMY_NAME-expected2] PASSED [ 13%]
+tests/test_encoding.py::TestTypeConversion::test_type_from_dict[type_dict0-DUMMY_NAME] PASSED [ 14%]
+tests/test_encoding.py::TestTypeConversion::test_type_from_dict_nested[type_dict0-DUMMY_NAME] PASSED [ 14%]
+tests/test_encoding.py::TestTypeConversion::test_type_to_json[DUMMY_NAME-{"elem_types": {"a": {"module": "builtins", "qualname": "int"}, "b": {"module": "builtins", "qualname": "str"}}, "is_typed_dict": true, "module": "tests.test_encoding", "qualname": "DUMMY_NAME"}] PASSED [ 14%]
+tests/test_encoding.py::TestTypeConversion::test_type_from_json[{"elem_types": {"a": {"module": "builtins", "qualname": "int"}, "b": {"module": "builtins", "qualname": "str"}}, "is_typed_dict": true, "module": "tests.test_encoding", "qualname": "DUMMY_NAME"}-DUMMY_NAME] PASSED [ 14%]
+tests/test_encoding.py::TestTypeConversion::test_type_round_trip_typed_dict[DUMMY_NAME] PASSED [ 15%]
+tests/test_encoding.py::TestTypeConversion::test_trace_round_trip PASSED [ 15%]
+tests/test_encoding.py::TestTypeConversion::test_convert_non_type PASSED [ 15%]
+tests/test_encoding.py::TestTypeConversion::test_maybe_encode_type[encoder0-None-None-False] PASSED [ 16%]
+tests/test_encoding.py::TestTypeConversion::test_maybe_encode_type[encoder1-str-foo-True] PASSED [ 16%]
+tests/test_encoding.py::TestTypeConversion::test_maybe_decode_type[encoder0-None-None-False] PASSED [ 16%]
+tests/test_encoding.py::TestTypeConversion::test_maybe_decode_type[encoder1-null-None-False] PASSED [ 16%]
+tests/test_encoding.py::TestTypeConversion::test_maybe_decode_type[encoder2-str-foo-True] PASSED [ 17%]
+tests/test_encoding.py::TestSerializeTraces::test_log_failure_and_continue PASSED [ 17%]
+tests/test_stubs.py::TestImportMap::test_merge PASSED                    [ 17%]
+tests/test_stubs.py::TestImportBlockStub::test_single_import PASSED      [ 17%]
+tests/test_stubs.py::TestImportBlockStub::test_io_import_single PASSED   [ 18%]
+tests/test_stubs.py::TestImportBlockStub::test_multiple_imports PASSED   [ 18%]
+tests/test_stubs.py::TestImportBlockStub::test_multiple_io_imports PASSED [ 18%]
+tests/test_stubs.py::TestAttributeStub::test_simple_attribute[stub0-    foo: int] PASSED [ 18%]
+tests/test_stubs.py::TestAttributeStub::test_simple_attribute[stub1-    foo: 'Foo'] PASSED [ 19%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[annotation0-'Foo'] PASSED [ 19%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List['Foo']] PASSED [ 19%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[List['Foo']]] PASSED [ 19%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Optional-Optional[int]] PASSED [ 20%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[Optional[int]]] PASSED [ 20%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[UserId-UserId] PASSED [ 20%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[UserId]] PASSED [ 20%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[int]] PASSED [ 21%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[List[int]]] PASSED [ 21%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[None-None] PASSED [ 21%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[None]] PASSED [ 22%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[int-int] PASSED [ 22%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Dummy-tests.util.Dummy] PASSED [ 22%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[tests.util.Dummy]] PASSED [ 22%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[some_string-some_string] PASSED [ 23%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Iterable-Iterable[None]] PASSED [ 23%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[Iterable[None]]] PASSED [ 23%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Generator-Generator['Foo', None, None]] PASSED [ 23%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[List-List[Generator['Foo', None, None]]] PASSED [ 24%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[T-T] PASSED [ 24%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Dict-Dict[str, T]] PASSED [ 24%]
+tests/test_stubs.py::TestRenderAnnotation::test_render_annotation[Tuple-Tuple[()]] PASSED [ 24%]
+tests/test_stubs.py::TestFunctionStub::test_classmethod PASSED           [ 25%]
+tests/test_stubs.py::TestFunctionStub::test_staticmethod PASSED          [ 25%]
+tests/test_stubs.py::TestFunctionStub::test_property PASSED              [ 25%]
+tests/test_stubs.py::TestFunctionStub::test_cached_property SKIPPED      [ 25%]
+tests/test_stubs.py::TestFunctionStub::test_simple PASSED                [ 26%]
+tests/test_stubs.py::TestFunctionStub::test_with_prefix PASSED           [ 26%]
+tests/test_stubs.py::TestFunctionStub::test_strip_modules PASSED         [ 26%]
+tests/test_stubs.py::TestFunctionStub::test_async_function PASSED        [ 27%]
+tests/test_stubs.py::TestFunctionStub::test_optional_parameter_annotation PASSED [ 27%]
+tests/test_stubs.py::TestFunctionStub::test_optional_union_parameter_annotation PASSED [ 27%]
+tests/test_stubs.py::TestFunctionStub::test_optional_return_annotation PASSED [ 27%]
+tests/test_stubs.py::TestFunctionStub::test_split_parameters_across_multiple_lines PASSED [ 28%]
+tests/test_stubs.py::TestFunctionStub::test_default_none_parameter_annotation PASSED [ 28%]
+tests/test_stubs.py::TestFunctionStub::test_newtype_parameter_annotation PASSED [ 28%]
+tests/test_stubs.py::TestFunctionStub::test_nonetype_annotation PASSED   [ 28%]
+tests/test_stubs.py::TestFunctionStub::test_forward_ref_annotation PASSED [ 29%]
+tests/test_stubs.py::TestFunctionStub::test_forward_ref_annotation_within_generator XPASS [ 29%]
+tests/test_stubs.py::TestClassStub::test_render PASSED                   [ 29%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[int-expected0] PASSED [ 29%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[List-expected1] PASSED [ 30%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Set-expected2] PASSED [ 30%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Dict-expected3] PASSED [ 30%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Tuple-expected4] PASSED [ 30%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[List-expected5] PASSED [ 31%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[List-expected6] PASSED [ 31%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[List-expected7] PASSED [ 31%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Dict-expected8] PASSED [ 32%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Set-expected9] PASSED [ 32%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Tuple-expected10] PASSED [ 32%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[DUMMY_NAME-expected11] PASSED [ 32%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[DUMMY_NAME-expected12] PASSED [ 33%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[DUMMY_NAME-expected13] PASSED [ 33%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[GenuineTypedDict-expected14] PASSED [ 33%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[DUMMY_NAME-expected15] PASSED [ 33%]
+tests/test_stubs.py::TestReplaceTypedDictsWithStubs::test_replace_typed_dict_with_stubs[Tuple-expected16] PASSED [ 34%]
+tests/test_stubs.py::TestModuleStub::test_render PASSED                  [ 34%]
+tests/test_stubs.py::TestModuleStub::test_render_nested_typed_dict PASSED [ 34%]
+tests/test_stubs.py::TestModuleStub::test_render_return_typed_dict PASSED [ 34%]
+tests/test_stubs.py::TestModuleStub::test_render_yield_typed_dict PASSED [ 35%]
+tests/test_stubs.py::TestModuleStub::test_render_typed_dict_in_list PASSED [ 35%]
+tests/test_stubs.py::TestModuleStub::test_render_typed_dict_base_and_subclass PASSED [ 35%]
+tests/test_stubs.py::TestModuleStub::test_render_return_empty_tuple PASSED [ 35%]
+tests/test_stubs.py::TestBuildModuleStubs::test_build_module_stubs PASSED [ 36%]
+tests/test_stubs.py::TestBuildModuleStubs::test_build_module_stubs_typed_dict_parameter PASSED [ 36%]
+tests/test_stubs.py::TestStubIndexBuilder::test_ignore_non_matching_functions PASSED [ 36%]
+tests/test_stubs.py::TestStubIndexBuilder::test_build_index PASSED       [ 37%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_arg PASSED     [ 37%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_arg_with_anno PASSED [ 37%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_self PASSED    [ 37%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_class PASSED   [ 38%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_arg_ignore_existing_anno PASSED [ 38%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_self_ignore_existing_anno PASSED [ 38%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_arg_ignore_existing_anno_None PASSED [ 38%]
+tests/test_stubs.py::TestUpdateSignatureArgs::test_update_arg_avoid_incompatible_anno PASSED [ 39%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_return PASSED [ 39%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_return_with_anno PASSED [ 39%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_avoid_incompatible_return PASSED [ 39%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_return_with_anno_ignored PASSED [ 40%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_yield PASSED [ 40%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_yield_and_return PASSED [ 40%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_yield_none_and_return PASSED [ 40%]
+tests/test_stubs.py::TestUpdateSignatureReturn::test_update_yield_and_return_none PASSED [ 41%]
+tests/test_stubs.py::TestFunctionKind::test_from_callable[a_static_method-FunctionKind.STATIC] PASSED [ 41%]
+tests/test_stubs.py::TestFunctionKind::test_from_callable[a_class_method-FunctionKind.CLASS] PASSED [ 41%]
+tests/test_stubs.py::TestFunctionKind::test_from_callable[an_instance_method-FunctionKind.INSTANCE] PASSED [ 41%]
+tests/test_stubs.py::TestFunctionKind::test_from_callable[a_property-FunctionKind.PROPERTY] PASSED [ 42%]
+tests/test_stubs.py::TestFunctionKind::test_from_callable[a_module_func-FunctionKind.MODULE] PASSED [ 42%]
+tests/test_stubs.py::TestFunctionDefinition::test_has_self[a_static_method-False] PASSED [ 42%]
+tests/test_stubs.py::TestFunctionDefinition::test_has_self[a_class_method-True] PASSED [ 43%]
+tests/test_stubs.py::TestFunctionDefinition::test_has_self[an_instance_method-True] PASSED [ 43%]
+tests/test_stubs.py::TestFunctionDefinition::test_has_self[a_property-True] PASSED [ 43%]
+tests/test_stubs.py::TestFunctionDefinition::test_has_self[a_module_func-False] PASSED [ 43%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[a_static_method-expected0] PASSED [ 44%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[a_class_method-expected1] PASSED [ 44%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[an_instance_method-expected2] PASSED [ 44%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[a_property-expected3] PASSED [ 44%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[a_module_func-expected4] PASSED [ 45%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable[an_async_func-expected5] PASSED [ 45%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable_and_traced_types[an_instance_method-arg_types0-int-None-expected0] PASSED [ 45%]
+tests/test_stubs.py::TestFunctionDefinition::test_from_callable_and_traced_types[an_instance_method-arg_types1-int-None-expected1] PASSED [ 45%]
+tests/test_stubs.py::TestShrinkTracedTypes::test_shrink_args PASSED      [ 46%]
+tests/test_stubs.py::TestShrinkTracedTypes::test_shrink_return PASSED    [ 46%]
+tests/test_stubs.py::TestShrinkTracedTypes::test_shrink_yield PASSED     [ 46%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_no_imports[_empty0] PASSED [ 46%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_no_imports[_empty1] PASSED [ 47%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_no_imports[not a type] PASSED [ 47%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_no_imports[int] PASSED [ 47%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_special_case_types[Any-expected0] PASSED [ 48%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_special_case_types[Union-expected1] PASSED [ 48%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_callable PASSED   [ 48%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_user_defined_class PASSED [ 48%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[Dict-expected0] PASSED [ 49%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[List-expected1] PASSED [ 49%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[Set-expected2] PASSED [ 49%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[Tuple-expected3] PASSED [ 49%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[Type-expected4] PASSED [ 50%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_container_types[Union-expected5] PASSED [ 50%]
+tests/test_stubs.py::TestGetImportsForAnnotation::test_nested_class PASSED [ 50%]
+tests/test_stubs.py::TestGetImportsForSignature::test_default_none_parameter_imports PASSED [ 50%]
+tests/test_tracing.py::TestGetFunc::test_get_func[frame0-a_static_method] PASSED [ 51%]
+tests/test_tracing.py::TestGetFunc::test_get_func[frame1-a_class_method] PASSED [ 51%]
+tests/test_tracing.py::TestGetFunc::test_get_func[frame2-an_instance_method] PASSED [ 51%]
+tests/test_tracing.py::TestGetFunc::test_get_func[frame3-a_module_function] PASSED [ 51%]
+tests/test_tracing.py::TestGetFunc::test_get_func[frame4-a_property] PASSED [ 52%]
+tests/test_tracing.py::TestTraceCalls::test_simple_call PASSED           [ 52%]
+tests/test_tracing.py::TestTraceCalls::test_kw_only_arg PASSED           [ 52%]
+tests/test_tracing.py::TestTraceCalls::test_flushes PASSED               [ 53%]
+tests/test_tracing.py::TestTraceCalls::test_callee_throws PASSED         [ 53%]
+tests/test_tracing.py::TestTraceCalls::test_nested_callee_throws_caller_doesnt_recover PASSED [ 53%]
+tests/test_tracing.py::TestTraceCalls::test_callee_throws_recovers PASSED [ 53%]
+tests/test_tracing.py::TestTraceCalls::test_nested_callee_throws_recovers PASSED [ 54%]
+tests/test_tracing.py::TestTraceCalls::test_caller_handles_callee_exception PASSED [ 54%]
+tests/test_tracing.py::TestTraceCalls::test_generator_trace PASSED       [ 54%]
+tests/test_tracing.py::TestTraceCalls::test_locally_defined_class_trace PASSED [ 54%]
+tests/test_tracing.py::TestTraceCalls::test_locally_defined_function_trace PASSED [ 55%]
+tests/test_tracing.py::TestTraceCalls::test_return_none PASSED           [ 55%]
+tests/test_tracing.py::TestTraceCalls::test_access_property PASSED       [ 55%]
+tests/test_tracing.py::TestTraceCalls::test_filtering PASSED             [ 55%]
+tests/test_tracing.py::TestTraceCalls::test_lazy_value PASSED            [ 56%]
+tests/test_type_checking_imports_transformer.py::TestMoveImportsToTypeCheckingBlockVisitor::test_move_imports__mix PASSED [ 56%]
+tests/test_type_checking_imports_transformer.py::TestMoveImportsToTypeCheckingBlockVisitor::test_simple_add_type_checking PASSED [ 56%]
+tests/test_type_checking_imports_transformer.py::TestMoveImportsToTypeCheckingBlockVisitor::test_type_checking_block_already_exists PASSED [ 56%]
+tests/test_type_checking_imports_transformer.py::TestMoveImportsToTypeCheckingBlockVisitor::test_typing_imports PASSED [ 57%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Any-Any-True] PASSED [ 57%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Any-int-False] PASSED [ 57%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Union-Union-True] PASSED [ 58%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Union-int-False0] PASSED [ 58%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Union-int-False1] PASSED [ 58%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[DUMMY_NAME-DUMMY_NAME-True] PASSED [ 58%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[DUMMY_NAME-DUMMY_NAME-False] PASSED [ 59%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[DUMMY_NAME-int-False] PASSED [ 59%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[List-List-True0] PASSED [ 59%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[List-List-True1] PASSED [ 59%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[List-List-True2] PASSED [ 60%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[List-List-False] PASSED [ 60%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Tuple-Tuple-True] PASSED [ 60%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Tuple-Tuple-False] PASSED [ 60%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[List-Tuple-False] PASSED [ 61%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Dict-Dict-True] PASSED [ 61%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Dict-Dict-False] PASSED [ 61%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Set-Set-True] PASSED [ 61%]
+tests/test_typing.py::TestTypesEqual::test_types_equal[Set-Set-False] PASSED [ 62%]
+tests/test_typing.py::TestTypesEqual::test_is_list[List-True] PASSED     [ 62%]
+tests/test_typing.py::TestTypesEqual::test_is_list[Tuple-False] PASSED   [ 62%]
+tests/test_typing.py::TestTypesEqual::test_is_list[int-False] PASSED     [ 62%]
+tests/test_typing.py::TestMakeTypedDict::test_make_typed_dict[required_fields0-optional_fields0-DUMMY_NAME] PASSED [ 63%]
+tests/test_typing.py::TestMakeTypedDict::test_field_annotations[required_fields0-optional_fields0] PASSED [ 63%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types0-DUMMY_NAME] PASSED [ 63%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types1-DUMMY_NAME] PASSED [ 64%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types2-DUMMY_NAME] PASSED [ 64%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types3-DUMMY_NAME] PASSED [ 64%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types4-DUMMY_NAME] PASSED [ 64%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types5-DUMMY_NAME] PASSED [ 65%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types6-DUMMY_NAME] PASSED [ 65%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types7-DUMMY_NAME] PASSED [ 65%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types8-DUMMY_NAME] PASSED [ 65%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types9-DUMMY_NAME] PASSED [ 66%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types10-Dict] PASSED [ 66%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types11-Dict] PASSED [ 66%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types12-DUMMY_NAME] PASSED [ 66%]
+tests/test_typing.py::TestShrinkType::test_shrink_non_uniform_typed_dict_types[types13-DUMMY_NAME] PASSED [ 67%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types0-Union] PASSED [ 67%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types1-List] PASSED [ 67%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types2-List] PASSED [ 67%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types3-List] PASSED [ 68%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types4-List] PASSED [ 68%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types5-DUMMY_NAME] PASSED [ 68%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types6-DUMMY_NAME] PASSED [ 69%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types7-Tuple] PASSED [ 69%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types8-Tuple] PASSED [ 69%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_non_typed_dict[types9-Dict] PASSED [ 69%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types0-Any] PASSED [ 70%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types1-int] PASSED [ 70%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types2-int] PASSED [ 70%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types3-Optional] PASSED [ 70%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types4-Union] PASSED [ 71%]
+tests/test_typing.py::TestShrinkType::test_shrink_types[types5-Union] PASSED [ 71%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_mixed_dicts[types0-DUMMY_NAME] PASSED [ 71%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_mixed_dicts[types1-Union] PASSED [ 71%]
+tests/test_typing.py::TestShrinkType::test_shrink_types_mixed_dicts[types2-Union] PASSED [ 72%]
+tests/test_typing.py::TestTypedDictHelpers::test_is_typed_dict[DUMMY_NAME-True] PASSED [ 72%]
+tests/test_typing.py::TestTypedDictHelpers::test_is_typed_dict[Dict-False] PASSED [ 72%]
+tests/test_typing.py::TestTypedDictHelpers::test_is_typed_dict[<lambda>-False] PASSED [ 72%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[DUMMY_NAME-DUMMY_NAME-True0] PASSED [ 73%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[DUMMY_NAME-DUMMY_NAME-False0] PASSED [ 73%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[DUMMY_NAME-Dict-False] PASSED [ 73%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[Dict-DUMMY_NAME-False] PASSED [ 74%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[Dict-Dict-True] PASSED [ 74%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[DUMMY_NAME-DUMMY_NAME-True1] PASSED [ 74%]
+tests/test_typing.py::TestTypedDictHelpers::test_are_dict_types_equal[DUMMY_NAME-DUMMY_NAME-False1] PASSED [ 74%]
+tests/test_typing.py::TestGetType::test_builtin_types[1-int] PASSED      [ 75%]
+tests/test_typing.py::TestGetType::test_builtin_types[foo-str] PASSED    [ 75%]
+tests/test_typing.py::TestGetType::test_builtin_types[Dummy-Type] PASSED [ 75%]
+tests/test_typing.py::TestGetType::test_builtin_types[1.1-float] PASSED  [ 75%]
+tests/test_typing.py::TestGetType::test_builtin_types[value4-Tuple] PASSED [ 76%]
+tests/test_typing.py::TestGetType::test_builtin_types[value5-Tuple] PASSED [ 76%]
+tests/test_typing.py::TestGetType::test_builtin_types[value6-Set] PASSED [ 76%]
+tests/test_typing.py::TestGetType::test_builtin_types[value7-Set] PASSED [ 76%]
+tests/test_typing.py::TestGetType::test_builtin_types[value8-Set] PASSED [ 77%]
+tests/test_typing.py::TestGetType::test_builtin_types[value9-List] PASSED [ 77%]
+tests/test_typing.py::TestGetType::test_builtin_types[value10-List] PASSED [ 77%]
+tests/test_typing.py::TestGetType::test_builtin_types[value11-List] PASSED [ 77%]
+tests/test_typing.py::TestGetType::test_builtin_types[value12-Tuple] PASSED [ 78%]
+tests/test_typing.py::TestGetType::test_builtin_types[helper-Callable] PASSED [ 78%]
+tests/test_typing.py::TestGetType::test_builtin_types[<lambda>-Callable] PASSED [ 78%]
+tests/test_typing.py::TestGetType::test_builtin_types[an_instance_method-Callable] PASSED [ 79%]
+tests/test_typing.py::TestGetType::test_builtin_types[len-Callable] PASSED [ 79%]
+tests/test_typing.py::TestGetType::test_builtin_types[generator-Iterator] PASSED [ 79%]
+tests/test_typing.py::TestGetType::test_dict_type[value0-Dict-Dict] PASSED [ 79%]
+tests/test_typing.py::TestGetType::test_dict_type[value1-Dict-DUMMY_NAME] PASSED [ 80%]
+tests/test_typing.py::TestGetType::test_dict_type[value2-Dict-Dict] PASSED [ 80%]
+tests/test_typing.py::TestGetType::test_dict_type[value3-DefaultDict-DefaultDict] PASSED [ 80%]
+tests/test_typing.py::TestGetType::test_dict_type[value4-DefaultDict-DefaultDict] PASSED [ 80%]
+tests/test_typing.py::TestGetType::test_dict_type[value5-Dict-DUMMY_NAME] PASSED [ 81%]
+tests/test_typing.py::TestGetType::test_dict_nested_within_generic[value0-DefaultDict-DefaultDict] PASSED [ 81%]
+tests/test_typing.py::TestGetType::test_dict_nested_within_generic[value1-List-List] PASSED [ 81%]
+tests/test_typing.py::TestGetType::test_dict_nested_within_generic[value2-List-List] PASSED [ 81%]
+tests/test_typing.py::TestGetType::test_dict_nested_within_generic[value3-Tuple-Tuple] PASSED [ 82%]
+tests/test_typing.py::TestGetType::test_dict_type_with_other_max_sizes[value0-1-Dict] PASSED [ 82%]
+tests/test_typing.py::TestGetType::test_dict_type_with_other_max_sizes[value1-1-DUMMY_NAME] PASSED [ 82%]
+tests/test_typing.py::TestGetType::test_instance_type PASSED             [ 82%]
+tests/test_typing.py::TestGetType::test_class_type PASSED                [ 83%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[List-int] PASSED [ 83%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[Foo-Foo0] PASSED [ 83%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[Foo-Foo1] PASSED [ 83%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[Foo-Foo2] PASSED [ 84%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[DUMMY_NAME-DUMMY_NAME] PASSED [ 84%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[T-Dict] PASSED [ 84%]
+tests/test_typing.py::TestTypeRewriter::test_rewrite_TypedDict[Dict-Dict] PASSED [ 85%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Union-Set] PASSED [ 85%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Union-Dict] PASSED [ 85%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Union-Union0] PASSED [ 85%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Union-Union1] PASSED [ 86%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Dict-Dict] PASSED [ 86%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Union-Union2] PASSED [ 86%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Tuple-Tuple0] PASSED [ 86%]
+tests/test_typing.py::TestRemoveEmptyContainers::test_rewrite[Tuple-Tuple1] PASSED [ 87%]
+tests/test_typing.py::TestRewriteConfigDict::test_rewrite[Union-Union0] PASSED [ 87%]
+tests/test_typing.py::TestRewriteConfigDict::test_rewrite[Union-Union1] PASSED [ 87%]
+tests/test_typing.py::TestRewriteConfigDict::test_rewrite[Union-Dict] PASSED [ 87%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_rewrite[Union-Intermediate0] PASSED [ 88%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_rewrite[Union-Base] PASSED [ 88%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_rewrite[Union-Intermediate1] PASSED [ 88%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_rewrite[Union-Union] PASSED [ 88%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_multiple_bases PASSED [ 89%]
+tests/test_typing.py::TestRewriteMostSpecificCommonBase::test_multiple_bases_nontrivial PASSED [ 89%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Union] PASSED [ 89%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Any0] PASSED [ 90%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Any1] PASSED [ 90%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Tuple0] PASSED [ 90%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Tuple1] PASSED [ 90%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-B] PASSED [ 91%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-A] PASSED [ 91%]
+tests/test_typing.py::TestRewriteLargeUnion::test_rewrite[Union-Any2] PASSED [ 91%]
+tests/test_typing.py::TestRewriteGenerator::test_rewrite[Generator-Generator0] PASSED [ 91%]
+tests/test_typing.py::TestRewriteGenerator::test_rewrite[Generator-Generator1] PASSED [ 92%]
+tests/test_typing.py::TestRewriteGenerator::test_rewrite[Generator-Iterator] PASSED [ 92%]
+tests/test_typing.py::TestRewriteAnonymousTypedDictToDict::test_rewrite[DUMMY_NAME-Dict0] PASSED [ 92%]
+tests/test_typing.py::TestRewriteAnonymousTypedDictToDict::test_rewrite[DUMMY_NAME-Dict1] PASSED [ 92%]
+tests/test_typing.py::TestRewriteAnonymousTypedDictToDict::test_rewrite[Foo-Foo] PASSED [ 93%]
+tests/test_typing.py::TestRewriteAnonymousTypedDictToDict::test_rewrite[Dict-Dict] PASSED [ 93%]
+tests/test_util.py::TestGetNameInModule::test_get_existing_name PASSED   [ 93%]
+tests/test_util.py::TestGetNameInModule::test_get_nonexistent_module PASSED [ 93%]
+tests/test_util.py::TestGetNameInModule::test_get_nonexistent_qualname PASSED [ 94%]
+tests/test_util.py::TestGetFuncInModule::test_get_method PASSED          [ 94%]
+tests/test_util.py::TestGetFuncInModule::test_get_property PASSED        [ 94%]
+tests/test_util.py::TestGetFuncInModule::test_get_settable_property PASSED [ 95%]
+tests/test_util.py::TestGetFuncInModule::test_get_cached_property SKIPPED [ 95%]
+tests/test_util.py::TestGetFuncInModule::test_get_non_function PASSED    [ 95%]
+tests/test_util.py::TestPascalCase::test_pascal_case[foo-Foo] PASSED     [ 95%]
+tests/test_util.py::TestPascalCase::test_pascal_case[foo_bar-FooBar] PASSED [ 96%]
+tests/test_util.py::TestPascalCase::test_pascal_case[fooBar-FooBar] PASSED [ 96%]
+tests/test_util.py::TestPascalCase::test_pascal_case[FooBar-FooBar] PASSED [ 96%]
+tests/test_util.py::TestPascalCase::test_pascal_case[_foo___bar_baz__-FooBarBaz] PASSED [ 96%]
+tests/db/test_base.py::test_round_trip PASSED                            [ 97%]
+tests/db/test_sqlite.py::test_round_trip PASSED                          [ 97%]
+tests/db/test_sqlite.py::test_dedup PASSED                               [ 97%]
+tests/db/test_sqlite.py::test_qualname_filtering PASSED                  [ 97%]
+tests/db/test_sqlite.py::test_limit_resultset PASSED                     [ 98%]
+demo/test_inbox.py::test_empty_inbox PASSED                              [ 98%]
+demo/test_inbox.py::test_commented PASSED                                [ 98%]
+demo/test_inbox.py::test_followed PASSED                                 [ 98%]
+demo/test_inbox.py::test_one_like PASSED                                 [ 99%]
+demo/test_inbox.py::test_two_likes PASSED                                [ 99%]
+demo/test_inbox.py::test_three_likes PASSED                              [ 99%]
+demo/test_inbox.py::test_aggregator_interface PASSED                     [100%]
+
+==== 378 passed, 2 skipped, 1 deselected, 1 xpassed, 702 warnings in 3.22s =====
++ : '>>>>> End Test Output'

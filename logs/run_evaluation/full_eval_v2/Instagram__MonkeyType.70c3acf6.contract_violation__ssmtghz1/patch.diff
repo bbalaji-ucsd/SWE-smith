@@ -1,0 +1,13 @@
+diff --git a/monkeytype/encoding.py b/monkeytype/encoding.py
+index ef789b0..a0118b9 100644
+--- a/monkeytype/encoding.py
++++ b/monkeytype/encoding.py
+@@ -136,6 +136,8 @@ def type_to_json(typ: type) -> str:
+ def type_from_json(typ_json: str) -> type:
+     """Reify a type from the format produced by type_to_json."""
+     type_dict = json.loads(typ_json)
++    if "elem_types" in type_dict:
++        type_dict = {k: v for k, v in type_dict.items() if k != "elem_types"}
+     return type_from_dict(type_dict)
+ 
+ 

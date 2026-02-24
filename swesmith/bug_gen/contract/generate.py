@@ -21,6 +21,7 @@ import logging
 import os
 import random
 import shutil
+import subprocess
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
@@ -60,7 +61,6 @@ litellm.drop_params = True
 litellm.suppress_debug_info = True
 
 VALID_STRATEGIES = ("contract_violation", "refactor_drift", "multi_site")
-STRATEGY_NAME = "contract_violation"  # default, overridden by --strategy
 
 
 def _find_matching_entity(
@@ -149,7 +149,7 @@ def gen_multi_site_violation(
             response: Any = completion(
                 model=model, messages=messages, n=1, temperature=1
             )
-        except (litellm.ContextWindowExceededError, Exception) as e:
+        except Exception as e:
             logging.warning(f"Multi-site LLM call failed for {ctx.target.qualified_name}: {e}")
             continue
 
@@ -205,7 +205,7 @@ def gen_contract_violation(
             response: Any = completion(
                 model=model, messages=messages, n=1, temperature=1
             )
-        except (litellm.ContextWindowExceededError, Exception) as e:
+        except Exception as e:
             logging.warning(f"LLM call failed for {ctx.target.qualified_name}: {e}")
             continue
 
@@ -369,7 +369,6 @@ def _run_multi_site(
                 )
                 (bug_dir / metadata_path).unlink(missing_ok=True)
                 # Reset repo in case of partial apply
-                import subprocess
                 subprocess.run(["git", "-C", repo, "reset", "--hard"],
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 subprocess.run(["git", "-C", repo, "clean", "-fdx"],
@@ -556,7 +555,7 @@ if __name__ == "__main__":
         type=str,
         default="contract_violation",
         choices=VALID_STRATEGIES,
-        help="Bug generation strategy: 'contract_violation' (default) or 'refactor_drift'.",
+        help="Bug generation strategy: 'contract_violation' (default), 'refactor_drift', or 'multi_site'.",
     )
     add_org_args(parser)
     args = parser.parse_args()

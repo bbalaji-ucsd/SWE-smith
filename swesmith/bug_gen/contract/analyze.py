@@ -239,7 +239,8 @@ def _resolve_imports(file_path: str) -> dict[str, list[str]]:
     Only handles ``from <module> import <names>`` style imports.
     """
     try:
-        tree = ast.parse(open(file_path, "r").read())
+        with open(file_path, "r") as f:
+            tree = ast.parse(f.read())
     except (SyntaxError, UnicodeDecodeError):
         return {}
     result: dict[str, list[str]] = {}
@@ -291,7 +292,8 @@ def find_cross_file_usages(
 
             # Find functions in this file that reference the target name
             try:
-                source = open(other_path, "r").read()
+                with open(other_path, "r") as fh:
+                    source = fh.read()
                 tree = ast.parse(source)
             except (SyntaxError, UnicodeDecodeError):
                 continue
@@ -358,7 +360,8 @@ def build_cross_file_contexts(
 
     for file_path in py_files:
         try:
-            file_source = open(file_path, "r").read()
+            with open(file_path, "r") as fh:
+                file_source = fh.read()
         except (UnicodeDecodeError, OSError):
             continue
 
@@ -396,6 +399,7 @@ def build_cross_file_contexts(
             )
 
     return contexts
+
 
 def _is_test_file(file_path: str) -> bool:
     """Check if a file path looks like a test file."""
@@ -441,7 +445,8 @@ def build_multi_site_contexts(
 
     for file_path in py_files:
         try:
-            file_source = open(file_path, "r").read()
+            with open(file_path, "r") as fh:
+                file_source = fh.read()
         except (UnicodeDecodeError, OSError):
             continue
 

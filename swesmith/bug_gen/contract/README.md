@@ -36,8 +36,8 @@ in a different file to work with a new contract, while leaving other callers
 un-updated — creating a multi-file bug that requires understanding cross-module
 dependencies to fix.
 
-This is uniquely interesting from a research perspective because:
-- It produces **multi-file bugs** (no other SWE-smith strategy does this)
+This is interesting because:
+- It produces **multi-file bugs** that require cross-module reasoning
 - The bug is a **partial migration** — a realistic failure mode in real codebases
 - An agent must identify that TWO files are wrong and fix both consistently
 - The coordinated caller's change looks intentional, making it harder to detect

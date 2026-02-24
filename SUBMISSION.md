@@ -10,16 +10,20 @@ This submission adds three new bug generation strategies to SWE-smith that produ
 
 All strategies support single-file and cross-file (`--cross_file`) dependency analysis. Multi-site automatically uses cross-file analysis.
 
+For a detailed discussion of the research motivation, design decisions, and rejected alternatives, see [METHODOLOGY.md](METHODOLOGY.md).
+
+For a per-bug walkthrough of all 10 generated instances with analysis of what makes each one interesting for agent evaluation, see [BUG_REPORT.md](BUG_REPORT.md).
+
 ## Research Motivation
 
 Existing SWE-smith methods generate single-function, single-file bugs. Real-world bugs often involve **cross-module contract violations** — a function's behavior changes and some callers are updated but others are not. This is especially common during refactoring, API evolution, and partial migrations.
 
-**Multi-site** is the most novel contribution: it's the only SWE-smith strategy that produces **coordinated multi-file bugs**. These are harder for LLM agents because:
+**Multi-site** produces **coordinated multi-file bugs**, which are harder for LLM agents because:
 - The agent must identify that TWO files are wrong (not just one)
 - The coordinated caller's change looks intentional, making it harder to detect
 - Fixing requires understanding the contract between modules, not just local code
 
-From a research perspective, multi-site bugs test whether coding agents can reason about **cross-module dependencies** — a capability that single-file benchmarks don't evaluate.
+Multi-site bugs test whether coding agents can reason about **cross-module dependencies** — a capability that single-file benchmarks don't evaluate well.
 
 ## Installation
 

@@ -169,10 +169,11 @@ There are two modes:
 * **Single-file** (default): Analyzes caller/callee relationships within one file.
 * **Cross-file** (`--cross_file`): Scans the entire repository to find functions in other modules that import and call the target. This produces bugs that cascade across module boundaries and tend to break more tests.
 
-And two strategies:
+And three strategies:
 
 * **Contract violation** (default): Ask the LLM to rewrite the target with a bug that violates the implicit contract between caller and callee.
 * **Refactoring drift** (`--strategy refactor_drift`): Ask the LLM to *refactor* the target as a plausible code-quality improvement. The bug is a side effect of the refactoring — a subtle behavioral drift hidden inside what looks like a legitimate cleanup. These bugs are harder to detect because the diff looks like an improvement, not a mistake.
+* **Multi-site** (`--strategy multi_site`): Simulate a partial API migration — rewrite both a target function AND one cross-file caller with a new contract, leaving other callers un-updated. Produces multi-file bugs that require cross-module reasoning to fix.
 
 **How do I run it?**
 
@@ -200,12 +201,21 @@ python -m swesmith.bug_gen.contract.generate $repo \
   --strategy refactor_drift
 ```
 
+Multi-site (automatically cross-file, produces multi-file bugs):
+```bash
+python -m swesmith.bug_gen.contract.generate $repo \
+  --model bedrock/us.anthropic.claude-sonnet-4-6 \
+  --max_bugs 5 \
+  --strategy multi_site
+```
+
 **What artifact(s) does it produce?**
 
 Same folder structure as LM Generated bugs, with artifacts named:
 
-* `bug__contract_violation__<hash>.diff`
-* `metadata__contract_violation__<hash>.json`
+* `bug__contract_violation__<hash>.diff` / `metadata__contract_violation__<hash>.json`
+* `bug__refactor_drift__<hash>.diff` / `metadata__refactor_drift__<hash>.json`
+* `bug__multi_site__<hash>.diff` / `metadata__multi_site__<hash>.json`
 
 The metadata includes the target function, its callers/callees, and (in cross-file mode) the cross-file usage sites that were shown to the LLM.
 

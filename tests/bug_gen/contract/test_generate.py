@@ -12,7 +12,6 @@ from swesmith.bug_gen.contract.analyze import (
 from swesmith.bug_gen.contract.generate import (
     gen_contract_violation,
     _find_matching_entity,
-    STRATEGY_NAME,
     VALID_STRATEGIES,
 )
 from swesmith.constants import BugRewrite, CodeEntity
@@ -92,7 +91,7 @@ class TestGenContractViolation:
 
         assert len(bugs) == 1
         assert isinstance(bugs[0], BugRewrite)
-        assert bugs[0].strategy == STRATEGY_NAME
+        assert bugs[0].strategy == "contract_violation"
         assert bugs[0].cost > 0
 
     def test_handles_llm_failure(self, sample_context):

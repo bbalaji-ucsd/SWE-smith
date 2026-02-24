@@ -32,7 +32,9 @@ No additional dependencies beyond the standard SWE-smith setup:
 ```bash
 git clone <this-repo>
 cd SWE-smith
-pip install -e ".[dev]"
+conda create -n swesmith python=3.11 -y
+conda activate swesmith
+pip install -e ".[all]"
 ```
 
 ## Prerequisites
